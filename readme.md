@@ -1,51 +1,85 @@
-# Name der App
+# 🛋️ Sofa-Shopper
 
-**Füge hier einen kurzen, knackigen Slogan ein, um deine App zu bewerben.**
+**Get Your Stuff Now.**
 
-Beschreibe hier in ein paar Sätzen, was deine App bietet.
+## 📝 Beschreibung
 
-Für wen ist sie geeignet? Welches Problem löst sie? Was macht deine App anders/besser als andere Apps?
-Vermeide es, hier allzusehr in technische Details zu gehen.
+**Sofa-Shopper** ist deine smarte Shopping-App für entspannte Einkaufserlebnisse vom Sofa aus.  
+Egal ob Mode, Technik oder Lifestyle-Produkte – mit wenigen Klicks findest du genau das, was du brauchst.
 
+Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen – ohne sich durch komplizierte Menüs kämpfen zu müssen.
 
-## Design
-Füge hier am Ende die Screenshots deiner App ein.
+> Unser Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
+> Im Gegensatz zu anderen Shopping-Apps setzt Sofa-Shopper auf Übersichtlichkeit, einfache Bedienung und ein modernes Look-and-Feel.
 
-<p>
-  <img src="./img/screen1.png" width="200">
-  <img src="./img/screen2.png" width="200">
-  <img src="./img/screen3.png" width="200">
-</p>
+---
 
+## 🎨 Design
 
-## Features
-Hier kommen alle Features rein, welche deine App bietet.
+| Startseite | Produktansicht | Warenkorb |
+|------------|----------------|-----------|
+| ![Startseite](./img/screen1.png) | ![Produktansicht](./img/screen2.png) | ![Warenkorb](./img/screen3.png) |
 
-**Tipp: Du kannst diese Punkte mit der Zeit abhaken, sodass am Ende eine vollständige Liste entsteht.**
+---
 
-- [x] Feature 1
-- [x] Feature 2
-- [ ] ...
+## ✅ Features
 
+- [x] Produktliste mit Such- und Filterfunktion  
+- [x] Detaillierte Produktansicht mit Bildern und Beschreibung  
+- [x] Warenkorb mit Live-Preisberechnung  
+- [x] Favoritenfunktion für Produkte  
+- [x] Benutzerprofil mit Bestellübersicht  
+- [x] Dark Mode  
 
-## Technischer Aufbau
+---
 
-#### Projektaufbau
-Eine kurze Beschreibung deiner Ordnerstruktur und Architektur (MVVM, Repositories) um Außenstehenden zu helfen, sich in deinem Projekt zurecht zu finden.
+## 🛠️ Technischer Aufbau
 
-#### Datenspeicherung
-Welche Daten speicherst du? Wo und wie (Firebase, Core Data)? Erkläre hier auch, warum du den jeweiligen Dienst nutzt (offline-first, Sync usw.).
+### 🔧 Projektstruktur & Architektur
 
-#### API Calls
-Welche APIs verwendest du?
+Das Projekt folgt dem **MVVM-Pattern** und ist modular aufgebaut:
 
-#### 3rd-Party Frameworks
-Verwendest du Frameworks/Libraries, die nicht von dir stammen?
+```
+/ui          → alle Screens & Composables
+/viewmodel   → zustandsbasierte Steuerung per StateFlow
+/repository  → Vermittlung zwischen UI und Datenquelle
+/data        → Modellklassen & API-Anbindung
+```
 
+> Diese Struktur sorgt für klare Trennung von Verantwortlichkeiten und einfache Testbarkeit.
 
-## Ausblick
-Beschreibe hier, wo die Reise nach deinem Praxisprojekt hin geht. Was möchtest du in Zukunft noch ergänzen?
+---
 
-- [ ] Geplantes Feature 1
-- [ ] Geplantes Feature 2
-- [ ] ...
+### 💾 Datenspeicherung
+
+- Aktuell: **temporäre In-Memory-Datenhaltung**  
+- Geplant: Integration mit **Room** (lokale Datenbank) für Offline-Nutzung  
+- Optional: Cloud-Sync via **Firebase Firestore**
+
+---
+
+### 🌐 API
+
+Die Produktdaten stammen von der **[Fake Store API](https://fakestoreapi.com)**  
+> Diese API bietet eine realistische Testumgebung für E-Commerce-Apps mit Produkten, Bildern, Preisen & mehr.
+
+---
+
+### 📦 Drittanbieter-Frameworks
+
+- [Retrofit](https://square.github.io/retrofit/) – für Netzwerkaufrufe  
+- [Koin](https://insert-koin.io/) – Dependency Injection  
+- [Coil](https://coil-kt.github.io/coil/) – Bild-Loading  
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) – UI-Toolkit  
+
+---
+
+## 🔮 Ausblick
+
+- [ ] Benutzer-Login mit Firebase Auth  
+- [ ] Wunschzettel & Merklisten  
+- [ ] Push-Benachrichtigungen bei Angeboten  
+- [ ] Bestellverfolgung mit Tracking  
+- [ ] Mehrsprachigkeit (DE/EN)
+
+---
