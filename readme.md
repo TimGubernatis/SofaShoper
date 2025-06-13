@@ -36,7 +36,7 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen â
 
 | Startseite | Produktansicht | Warenkorb |
 |------------|----------------|-----------|
-| ![Startseite](./img/screen1.png) | ![Produktansicht](./img/screen2.png) | ![Warenkorb](./img/screen3.png) |
+| ![Startseite]() | ![Produktansicht]() | ![Warenkorb]() |
 
 ---
 
