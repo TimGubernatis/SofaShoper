@@ -27,7 +27,7 @@ Egal ob Mode, Technik oder Lifestyle-Produkte – mit wenigen Klicks findest du 
 
 Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen – ohne sich durch komplizierte Menüs kämpfen zu müssen.
 
-> Unser Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
+> Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
 > Im Gegensatz zu anderen Shopping-Apps setzt Sofa-Shopper auf Übersichtlichkeit, einfache Bedienung und ein modernes Look-and-Feel.
 
 ---
@@ -77,7 +77,7 @@ Das Projekt folgt dem **MVVM-Pattern** und ist modular aufgebaut:
 
 ### 🌐 API
 
-Die Produktdaten stammen von der **[Fake Store API](https://fakestoreapi.com)**  
+Die Produktdaten stammen von der **[Fake Store API](https://fakeapi.platzi.com)**  
 > Diese API bietet eine realistische Testumgebung für E-Commerce-Apps mit Produkten, Bildern, Preisen & mehr.
 
 ---
