@@ -2,6 +2,24 @@
 
 **Get Your Stuff Now.**
 
+---
+
+## 📚 Inhaltsverzeichnis
+
+1. [🛋️ Sofa-Shopper](#-sofa-shopper)  
+2. [📝 Beschreibung](#-beschreibung)  
+3. [🎨 Design](#-design)  
+4. [✅ Features](#-features)  
+5. [🛠️ Technischer Aufbau](#-technischer-aufbau)  
+   - [🔧 Projektstruktur & Architektur](#-projektstruktur--architektur)  
+   - [💾 Datenspeicherung](#-datenspeicherung)  
+   - [🌐 API](#-api)  
+   - [📦 Drittanbieter-Frameworks](#-drittanbieter-frameworks)  
+6. [🛒 Einkauf & Bestand](#-einkauf--bestand)  
+7. [🔮 Ausblick](#-ausblick)
+
+---
+
 ## 📝 Beschreibung
 
 **Sofa-Shopper** ist deine smarte Shopping-App für entspannte Einkaufserlebnisse vom Sofa aus.  
@@ -9,7 +27,7 @@ Egal ob Mode, Technik oder Lifestyle-Produkte – mit wenigen Klicks findest du 
 
 Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen – ohne sich durch komplizierte Menüs kämpfen zu müssen.
 
-> Unser Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
+> Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
 > Im Gegensatz zu anderen Shopping-Apps setzt Sofa-Shopper auf Übersichtlichkeit, einfache Bedienung und ein modernes Look-and-Feel.
 
 ---
@@ -18,7 +36,7 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen �
 
 | Startseite | Produktansicht | Warenkorb |
 |------------|----------------|-----------|
-| ![Startseite](./img/screen1.png) | ![Produktansicht](./img/screen2.png) | ![Warenkorb](./img/screen3.png) |
+| ![Startseite]() | ![Produktansicht]() | ![Warenkorb]() |
 
 ---
 
@@ -53,14 +71,13 @@ Das Projekt folgt dem **MVVM-Pattern** und ist modular aufgebaut:
 ### 💾 Datenspeicherung
 
 - Aktuell: **temporäre In-Memory-Datenhaltung**  
-- Geplant: Integration mit **Room** (lokale Datenbank) für Offline-Nutzung  
-- Optional: Cloud-Sync via **Firebase Firestore**
+- Zukünftig: Cloud-Sync via **Firebase Firestore**
 
 ---
 
 ### 🌐 API
 
-Die Produktdaten stammen von der **[Fake Store API](https://fakestoreapi.com)**  
+Die Produktdaten stammen von der **[Fake Store API](https://fakeapi.platzi.com)**  
 > Diese API bietet eine realistische Testumgebung für E-Commerce-Apps mit Produkten, Bildern, Preisen & mehr.
 
 ---
@@ -74,12 +91,28 @@ Die Produktdaten stammen von der **[Fake Store API](https://fakestoreapi.com)**
 
 ---
 
+## 🛒 Einkauf & Bestand
+
+Sofa-Shopper simuliert echte Kaufvorgänge inklusive:
+
+- ✅ **Produktbestand**: Jeder Artikel hat eine begrenzte Menge im Lager.  
+- ✅ **Kauf-Simulation**: Beim Kauf wird der Bestand reduziert.  
+- ✅ **Lagerprüfung**: Artikel sind „ausverkauft“, wenn der Bestand auf 0 fällt.  
+- ✅ **Warenkorb-Validierung**: Nur verfügbare Mengen können in den Warenkorb gelegt werden.  
+- ✅ **Restbestand-Hinweis**: Anzeige „Nur noch X verfügbar!“ bei geringer Stückzahl.  
+
+> Ziel ist eine realitätsnahe Shopping-Experience – auch für Tests, Prototyping & UI-Demonstrationen.
+
+---
+
 ## 🔮 Ausblick
 
 - [ ] Benutzer-Login mit Firebase Auth  
 - [ ] Wunschzettel & Merklisten  
 - [ ] Push-Benachrichtigungen bei Angeboten  
 - [ ] Bestellverfolgung mit Tracking  
-- [ ] Mehrsprachigkeit (DE/EN)
+- [ ] Mehrsprachigkeit (DE/EN)  
 
 ---
+
+**Made with ❤️ in Kotlin + Jetpack Compose**
