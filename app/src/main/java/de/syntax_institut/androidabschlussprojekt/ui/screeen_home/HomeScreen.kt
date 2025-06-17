@@ -71,8 +71,8 @@ fun HomeScreen(
                 }
 
                 is UiState.Success -> {
-                    val products = (uiState as UiState.Success).products
                     val categories = (uiState as UiState.Success).categories
+                    val products by viewModel.filteredProducts.collectAsState()
 
                     CategoryRow(
                         categories = categories,
