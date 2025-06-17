@@ -14,6 +14,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.screeen_home.components.Cat
 import de.syntax_institut.androidabschlussprojekt.ui.screeen_home.components.CollapsibleSearchBar
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.*
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,8 +25,7 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    val products by viewModel.filteredProducts.collectAsState()
-    val categories by viewModel.categories.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
@@ -57,23 +57,42 @@ fun HomeScreen(
                 onSearchToggle = { isSearching = !isSearching }
             )
 
-            CategoryRow(
-                categories = categories,
-                selectedCategory = selectedCategory,
-                onCategoryClick = { viewModel.selectCategory(it) }
-            )
+            when (uiState) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                }
 
-            DealOfTheDayBanner()
-
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(products) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { onProductClick(product.id) }
+                is UiState.Error -> {
+                    Text(
+                        text = "Fehler beim Laden. Prüfe deine Internetverbindung.",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
                     )
+                }
+
+                is UiState.Success -> {
+                    val products = (uiState as UiState.Success).products
+                    val categories = (uiState as UiState.Success).categories
+
+                    CategoryRow(
+                        categories = categories,
+                        selectedCategory = selectedCategory,
+                        onCategoryClick = { viewModel.selectCategory(it) }
+                    )
+
+                    DealOfTheDayBanner()
+
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(products) { product ->
+                            ProductCard(
+                                product = product,
+                                onClick = { onProductClick(product.id) }
+                            )
+                        }
+                    }
                 }
             }
         }

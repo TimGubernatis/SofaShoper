@@ -11,14 +11,22 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
+
+    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState: StateFlow<UiState> = _uiState
+
+
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val filteredProducts: StateFlow<List<Product>> = _products
+
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: StateFlow<List<Category>> = _categories
 
+
     private val _selectedCategory = MutableStateFlow<Category?>(null)
     val selectedCategory: StateFlow<Category?> = _selectedCategory
+
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -29,9 +37,19 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
     fun fetchProducts() {
         viewModelScope.launch {
-            val allProducts = repository.getAllProducts()
-            _products.value = allProducts
-            _categories.value = repository.getAllCategories(allProducts)
+            _uiState.value = UiState.Loading
+            try {
+                val allProducts = repository.getAllProducts()
+                val allCategories = repository.getAllCategories(allProducts)
+                _products.value = allProducts
+                _categories.value = allCategories
+                _uiState.value = UiState.Success(
+                    products = allProducts,
+                    categories = allCategories
+                )
+            } catch (e: Exception) {
+                _uiState.value = UiState.Error("Fehler beim Laden: ${e.message ?: "Unbekannter Fehler"}")
+            }
         }
     }
 
