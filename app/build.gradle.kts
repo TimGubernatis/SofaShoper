@@ -77,6 +77,12 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.ui.text)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material)
+
+
+
 
 
     debugImplementation(libs.androidx.ui.test.manifest)

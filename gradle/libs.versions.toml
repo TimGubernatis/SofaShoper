@@ -7,7 +7,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2024.04.01"
+composeBom = "2025.06.01"
 navigationCompose = "2.8.3"
 kotlinSerialization = "1.6.3"
 moshiVersion = "1.15.0"
@@ -18,10 +18,15 @@ roomRuntime = "2.6.0"
 kspVersion = "2.0.21-1.0.25"
 koinBom = "4.1.0-Beta4"
 workRuntimeKtx = "2.9.1"
+composeFoundation = "1.5.0"
+
 
 
 
 [libraries]
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "composeFoundation" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "composeFoundation" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "composeFoundation" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

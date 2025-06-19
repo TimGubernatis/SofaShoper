@@ -27,7 +27,6 @@ fun ProductCard(
     onClick: () -> Unit
 ) {
     val context: Context = LocalContext.current
-    val imageState = remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
 
     Card(
         modifier = Modifier
@@ -46,31 +45,15 @@ fun ProductCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(product.images.firstOrNull())
+                        .data(product.images.firstOrNull() ?: "")
                         .crossfade(true)
                         .build(),
                     contentDescription = product.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
-                    onState = { imageState.value = it }
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.ic_broken_image)
                 )
-
-                when (val state = imageState.value) {
-                    is AsyncImagePainter.State.Loading -> {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    }
-
-                    is AsyncImagePainter.State.Error -> {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_broken_image),
-                            contentDescription = "Bild konnte nicht geladen werden",
-                            modifier = Modifier.size(64.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.error)
-                        )
-                    }
-
-                    else -> Unit
-                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

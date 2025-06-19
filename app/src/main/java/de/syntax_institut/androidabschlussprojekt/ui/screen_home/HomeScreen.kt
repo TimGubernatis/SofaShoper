@@ -10,8 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import de.syntax_institut.androidabschlussprojekt.ui.screeen_home.components.CategoryRow
-import de.syntax_institut.androidabschlussprojekt.ui.screeen_home.components.CollapsibleSearchBar
+import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CategoryRow
+import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CollapsibleSearchBar
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.*
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
@@ -32,7 +32,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text("Welcome, Tim 👋") },
                 actions = {
                     IconButton(onClick = onCartClick) {
@@ -57,21 +57,21 @@ fun HomeScreen(
                 onSearchToggle = { isSearching = !isSearching }
             )
 
-            when (uiState) {
+            when (val state = uiState) {
                 is UiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.padding(16.dp))
                 }
 
                 is UiState.Error -> {
                     Text(
-                        text = "Fehler beim Laden. Prüfe deine Internetverbindung.",
+                        text = state.message,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
 
                 is UiState.Success -> {
-                    val categories = (uiState as UiState.Success).categories
+                    val categories = state.categories
                     val products by viewModel.filteredProducts.collectAsState()
 
                     CategoryRow(
@@ -86,7 +86,7 @@ fun HomeScreen(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(products) { product ->
+                        items(products, key = { it.id }) { product ->
                             ProductCard(
                                 product = product,
                                 onClick = { onProductClick(product.id) }

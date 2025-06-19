@@ -11,6 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.HomeScreen
 import de.syntax_institut.androidabschlussprojekt.ui.theme.AndroidAbschlussprojektTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.ProductDetailScreen
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -27,18 +32,33 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainApp() {
+    val navController = rememberNavController()
+
     Surface(modifier = Modifier.fillMaxSize()) {
-        // Navigation kannst du später einbauen – aktuell nur HomeScreen
-        HomeScreen(
-            onProductClick = { productId ->
-                // TODO: Implementiere Navigation zu DetailScreen
-            },
-            onCartClick = {
-                // TODO: Navigation zum Warenkorb
-            },
-            onProfileClick = {
-                // TODO: Navigation zum Profil
+        NavHost(
+            navController = navController,
+            startDestination = "home"
+        ) {
+            composable("home") {
+                HomeScreen(
+                    onProductClick = { productId ->
+                        navController.navigate("productDetail/$productId")
+                    },
+                    onCartClick = {
+                        // TODO: CartScreen später
+                    },
+                    onProfileClick = {
+                        // TODO: ProfileScreen später
+                    }
+                )
             }
-        )
+
+            composable("productDetail/{productId}") { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull()
+                if (productId != null) {
+                    ProductDetailScreen(productId = productId)
+                }
+            }
+        }
     }
 }

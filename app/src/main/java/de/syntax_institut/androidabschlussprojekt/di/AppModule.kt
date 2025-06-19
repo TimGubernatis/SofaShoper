@@ -3,7 +3,7 @@ package de.syntax_institut.androidabschlussprojekt.di
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import de.syntax_institut.androidabschlussprojekt.data.remote.ProductApiService
-import de.syntax_institut.androidabschlussprojekt.data.repository.ProductRepository
+import de.syntax_institut.androidabschlussprojekt.repository.ProductRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
