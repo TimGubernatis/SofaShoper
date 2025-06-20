@@ -27,11 +27,9 @@ fun ImageCarousel(
 ) {
     val pagerState = rememberPagerState(initialPage = 0) { imageUrls.size }
 
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = modifier
     ) {
-
         HorizontalPager(state = pagerState) { page ->
             AsyncImage(
                 model = imageUrls[page],
@@ -43,19 +41,16 @@ fun ImageCarousel(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-                .align(Alignment.CenterHorizontally),
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+                .wrapContentWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(imageUrls.size) { index ->
                 val isSelected = pagerState.currentPage == index
-
 
                 val indicatorSize by animateDpAsState(
                     targetValue = if (isSelected) 12.dp else 8.dp,
@@ -69,18 +64,15 @@ fun ImageCarousel(
                     label = "IndicatorColor"
                 )
 
+                Spacer(modifier = Modifier.width(4.dp))
+
                 Canvas(
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(indicatorSize)
+                    modifier = Modifier.size(indicatorSize)
                 ) {
-                    drawRoundRect(
-                        color = indicatorColor,
-                        topLeft = Offset.Zero,
-                        size = Size(size.width, size.height),
-                        cornerRadius = CornerRadius(x = size.minDimension / 2, y = size.minDimension / 2)
-                    )
+                    drawCircle(color = indicatorColor)
                 }
+
+                Spacer(modifier = Modifier.width(4.dp))
             }
         }
     }

@@ -22,7 +22,7 @@ fun ProductDetailContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val locale = remember { context.resources.configuration.locales[0] }
+    val locale = remember { Locale("pl", "PL") }
     val currency = Currency.getInstance(locale)
     val formattedPrice = NumberFormat.getCurrencyInstance(locale).apply {
         this.currency = currency
