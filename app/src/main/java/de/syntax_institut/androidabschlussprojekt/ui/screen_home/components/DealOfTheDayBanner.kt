@@ -1,7 +1,6 @@
 package de.syntax_institut.androidabschlussprojekt.ui.screen_home.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
