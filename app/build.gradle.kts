@@ -90,6 +90,12 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
 
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+
     // Credentials & Google Auth
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)

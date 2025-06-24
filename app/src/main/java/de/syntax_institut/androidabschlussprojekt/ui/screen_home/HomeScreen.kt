@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -23,7 +24,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onFavoritesClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
@@ -40,6 +42,9 @@ fun HomeScreen(
                     }
                     IconButton(onClick = onProfileClick) {
                         Icon(Icons.Default.Person, contentDescription = "Profile")
+                    }
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(Icons.Default.Favorite, contentDescription = "Favorites")
                     }
                 }
             )
