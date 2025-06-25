@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.google.gms.google.services)
+    id("com.google.gms.google-services")
 
 
 }
