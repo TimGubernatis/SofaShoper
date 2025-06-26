@@ -67,6 +67,22 @@ class AuthViewModel(
         }
     }
 
+    fun register(email: String, password: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+
+                auth.createUserWithEmailAndPassword(email, password).await()
+
+                signIn(email, password)
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Fehler bei der Registrierung"
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch {
             signOutUseCase()
