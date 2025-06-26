@@ -13,17 +13,18 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.ProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.FavoritesScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
     val navController = rememberNavController()
-
     val user by authViewModel.user.collectAsState()
     val isUserLoggedIn = user != null
 
     Surface(modifier = Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = "home") {
+
             composable("home") {
                 HomeScreen(
                     onProductClick = { productId -> navController.navigate("productDetail/$productId") },
@@ -51,10 +52,11 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             }
 
             composable("profile") {
+                val userProfileViewModel: UserProfileViewModel = koinViewModel()
                 ProfileScreen(
-                    authViewModel = authViewModel,
+                    userProfileViewModel = userProfileViewModel,
                     onLogout = {
-                        authViewModel.signOut()
+                        userProfileViewModel.signOut()
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
                         }

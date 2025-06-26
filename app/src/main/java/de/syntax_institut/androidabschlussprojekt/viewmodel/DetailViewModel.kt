@@ -1,2 +1,0 @@
-package de.syntax_institut.androidabschlussprojekt.viewmodel
-
