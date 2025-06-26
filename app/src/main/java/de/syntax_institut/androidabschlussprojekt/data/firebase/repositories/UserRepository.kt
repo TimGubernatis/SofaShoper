@@ -6,14 +6,24 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Us
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 
 class UserRepository {
 
     private val db = Firebase.firestore
     private val collection = db.collection("users")
 
-    fun saveUser(user: User) {
-        collection.document(user.id!!).set(user)
+    suspend fun saveUser(user: User) {
+        collection.document(user.id!!).set(user).await()
+    }
+
+    suspend fun getUser(id: String): User? {
+        val doc = collection.document(id).get().await()
+        return doc.toObject(User::class.java)
+    }
+
+    suspend fun updateUserFields(id: String, fields: Map<String, Any>) {
+        collection.document(id).update(fields).await()
     }
 
     fun observeUser(id: String): Flow<User?> = callbackFlow {

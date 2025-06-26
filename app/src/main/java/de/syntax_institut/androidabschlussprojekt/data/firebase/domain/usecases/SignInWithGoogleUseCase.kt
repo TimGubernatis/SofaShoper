@@ -4,7 +4,7 @@ import android.util.Log
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.mappers.FirebaseAuthUserMapper
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import de.syntax_institut.androidabschlussprojekt.data.firebase.services.AuthenticationService
-
+import com.google.firebase.auth.FirebaseUser
 
 class SignInWithGoogleUseCase(
     private val authenticationService: AuthenticationService,
@@ -15,7 +15,7 @@ class SignInWithGoogleUseCase(
         const val TAG = "SignInWithGoogleUseCase"
     }
 
-    suspend operator fun invoke(authToken: String) {
+    suspend operator fun invoke(authToken: String): FirebaseUser? {
         Log.i(TAG, "invoke: google sign-in with authToken=$authToken")
 
         val firebaseGoogleUser = authenticationService.signInWithGoogle(authToken)
@@ -23,5 +23,7 @@ class SignInWithGoogleUseCase(
 
         val user = FirebaseAuthUserMapper.toDomain(firebaseGoogleUser)
         userRepository.saveUser(user)
+
+        return firebaseGoogleUser
     }
 }
