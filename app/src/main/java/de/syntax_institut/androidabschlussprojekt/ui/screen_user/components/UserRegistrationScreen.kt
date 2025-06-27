@@ -21,13 +21,11 @@ fun UserRegistrationScreen(
     var phone by remember { mutableStateOf("") }
     var mobile by remember { mutableStateOf("") }
 
-
     var street by remember { mutableStateOf("") }
     var houseNumber by remember { mutableStateOf("") }
     var postalCode by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var country by remember { mutableStateOf("DE") }
-
 
     var billingSameAsShipping by remember { mutableStateOf(true) }
     var billingStreet by remember { mutableStateOf("") }
@@ -35,7 +33,6 @@ fun UserRegistrationScreen(
     var billingPostalCode by remember { mutableStateOf("") }
     var billingCity by remember { mutableStateOf("") }
     var billingCountry by remember { mutableStateOf("DE") }
-
 
     var paymentMethodType by remember { mutableStateOf("None") }
     var paypalEmail by remember { mutableStateOf("") }
@@ -163,7 +160,6 @@ fun UserRegistrationScreen(
 
         Text("Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
 
-
         DropdownMenuDemo(
             selectedMethod = paymentMethodType,
             onMethodSelected = { paymentMethodType = it }
@@ -223,9 +219,9 @@ fun UserRegistrationScreen(
                         )
                     },
                     paymentMethod = when (paymentMethodType) {
-                        "PayPal" -> PaymentMethod.PayPal(paypalEmail)
-                        "IBAN" -> PaymentMethod.IBAN(iban)
-                        else -> PaymentMethod.None
+                        "PayPal" -> PaymentMethod.paypal(paypalEmail)
+                        "IBAN" -> PaymentMethod.iban(iban)
+                        else -> PaymentMethod.none()
                     }
                 )
                 onRegisterClick(userInput)

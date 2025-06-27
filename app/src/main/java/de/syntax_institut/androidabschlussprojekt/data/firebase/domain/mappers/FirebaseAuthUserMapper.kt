@@ -10,12 +10,10 @@ object FirebaseAuthUserMapper {
             id = firebaseUser.uid,
             email = firebaseUser.email ?: "",
             displayName = firebaseUser.displayName,
-
         )
     }
 
     fun fromMap(data: Map<String, Any?>): User {
-
         val shippingMap = data["shippingAddress"] as? Map<String, Any?> ?: emptyMap()
         val billingMap = data["billingAddress"] as? Map<String, Any?> ?: emptyMap()
         val paymentMap = data["paymentMethod"] as? Map<String, Any?>
@@ -38,10 +36,15 @@ object FirebaseAuthUserMapper {
             country = billingMap["country"] as? String ?: "DE"
         )
 
-        val paymentMethod = when (paymentMap?.get("type")) {
-            "PayPal" -> PaymentMethod.PayPal(paymentMap["email"] as? String ?: "")
-            "IBAN" -> PaymentMethod.IBAN(paymentMap["iban"] as? String ?: "")
-            else -> PaymentMethod.None
+        // Updated PaymentMethod handling for data class
+        val paymentMethod = if (paymentMap != null) {
+            PaymentMethod(
+                type = paymentMap["type"] as? String ?: "None",
+                email = paymentMap["email"] as? String ?: "",
+                iban = paymentMap["iban"] as? String ?: ""
+            )
+        } else {
+            PaymentMethod.none()
         }
 
         val favorites = data["favorites"] as? List<String> ?: emptyList()
@@ -75,10 +78,13 @@ object FirebaseAuthUserMapper {
     }
 
     fun toMap(user: User): Map<String, Any?> {
-        val paymentMap = when (user.paymentMethod) {
-            is PaymentMethod.PayPal -> mapOf("type" to "PayPal", "email" to user.paymentMethod.email)
-            is PaymentMethod.IBAN -> mapOf("type" to "IBAN", "iban" to user.paymentMethod.iban)
-            else -> null
+        // PaymentMethod is now a data class, so we can serialize it directly
+        val paymentMap = user.paymentMethod?.let { pm ->
+            mapOf(
+                "type" to pm.type,
+                "email" to pm.email,
+                "iban" to pm.iban
+            )
         }
 
         return mapOf(

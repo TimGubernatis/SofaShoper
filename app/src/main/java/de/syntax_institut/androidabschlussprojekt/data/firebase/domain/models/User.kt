@@ -30,10 +30,18 @@ data class Address(
     val country: String = "DE"
 )
 
-sealed class PaymentMethod {
-    data class PayPal(val email: String = "") : PaymentMethod()
-    data class IBAN(val iban: String = "") : PaymentMethod()
-    object None : PaymentMethod()
+data class PaymentMethod(
+    val type: String = "None",
+    val email: String = "",
+    val iban: String = ""
+) {
+    companion object {
+        fun none() = PaymentMethod("None")
+        fun paypal(email: String) = PaymentMethod("PayPal", email = email)
+        fun iban(iban: String) = PaymentMethod("IBAN", iban = iban)
+    }
+
+
 }
 
 data class Order(

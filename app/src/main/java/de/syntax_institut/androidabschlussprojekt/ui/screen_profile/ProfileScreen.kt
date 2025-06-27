@@ -105,20 +105,15 @@ fun ProfileScreen(
             billingCity = it.billingAddress.city
             billingCountry = it.billingAddress.country
 
-            when (val pm = it.paymentMethod) {
-                is PaymentMethod.PayPal -> {
-                    paymentMethodType = "PayPal"
-                    paypalEmail = pm.email
-                }
-                is PaymentMethod.IBAN -> {
-                    paymentMethodType = "IBAN"
-                    ibanNumber = pm.iban
-                }
-                PaymentMethod.None, null -> {
-                    paymentMethodType = "None"
-                    paypalEmail = ""
-                    ibanNumber = ""
-                }
+            val pm = it.paymentMethod
+            if (pm != null) {
+                paymentMethodType = pm.type
+                paypalEmail = pm.email
+                ibanNumber = pm.iban
+            } else {
+                paymentMethodType = "None"
+                paypalEmail = ""
+                ibanNumber = ""
             }
         }
     }
@@ -263,9 +258,9 @@ fun ProfileScreen(
                             country = billingCountry
                         )
                         val paymentMethod = when (paymentMethodType) {
-                            "PayPal" -> PaymentMethod.PayPal(email = paypalEmail)
-                            "IBAN" -> PaymentMethod.IBAN(iban = ibanNumber)
-                            else -> PaymentMethod.None
+                            "PayPal" -> PaymentMethod.paypal(email = paypalEmail)
+                            "IBAN" -> PaymentMethod.iban(iban = ibanNumber)
+                            else -> PaymentMethod.none()
                         }
                         user?.let {
                             val updatedUser = it.copy(
