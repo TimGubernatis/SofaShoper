@@ -5,7 +5,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import de.syntax_institut.androidabschlussprojekt.data.firebase.services.AuthenticationService
 import de.syntax_institut.androidabschlussprojekt.data.remote.ProductApiService
-import de.syntax_institut.androidabschlussprojekt.repository.ProductRepository
+import de.syntax_institut.androidabschlussprojekt.data.repository.ProductRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.SettingsViewModel

@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.repository
+package de.syntax_institut.androidabschlussprojekt.data.repository
 
 import de.syntax_institut.androidabschlussprojekt.data.model.Category
 import de.syntax_institut.androidabschlussprojekt.data.model.Product

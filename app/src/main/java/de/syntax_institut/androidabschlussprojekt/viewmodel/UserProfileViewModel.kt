@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class UserProfileViewModel(
-    private val userRepository: UserRepository,
-    private val authViewModel: AuthViewModel
+    val authViewModel: AuthViewModel,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _user = MutableStateFlow<User?>(null)
@@ -28,6 +28,8 @@ class UserProfileViewModel(
                 if (currentUser != null) {
                     val loadedUser = userRepository.getUser(currentUser.id ?: "")
                     _user.value = loadedUser
+                } else {
+                    _user.value = null
                 }
             }
         }
@@ -47,7 +49,9 @@ class UserProfileViewModel(
             }
         }
     }
+
     fun signOut() {
+        println("UserProfileViewModel: signOut aufgerufen")
         authViewModel.signOut()
     }
 }

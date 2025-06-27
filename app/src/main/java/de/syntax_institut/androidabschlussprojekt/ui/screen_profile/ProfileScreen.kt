@@ -1,25 +1,61 @@
 package de.syntax_institut.androidabschlussprojekt.ui.screen_profile
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.*
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressFields
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.PaymentMethodSelector
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.UserInfoSection
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.navigation.NavController
+import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     userProfileViewModel: UserProfileViewModel = koinViewModel(),
-    onLogout: () -> Unit
+    onLogout: () -> Unit = {}
 ) {
     val user by userProfileViewModel.user.collectAsState()
+    val isSigningOut by userProfileViewModel.authViewModel.isSigningOut.collectAsState()
+    var userLoaded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(user, isSigningOut) {
+        if (user != null) {
+            userLoaded = true
+        }
+        if (!isSigningOut && userLoaded && user == null) {
+            navController.navigate("home") {
+                popUpTo("profile") { inclusive = true }
+            }
+        }
+    }
+
+    if (user == null) {
+        LoginScreen(
+            onLoginSuccess = {},
+            onCancel = {
+                navController.navigate("home") {
+                    popUpTo("profile") { inclusive = true }
+                }
+            }
+        )
+        return
+    }
+
     val isSaving by userProfileViewModel.isSaving.collectAsState()
     val errorMessage by userProfileViewModel.errorMessage.collectAsState()
 
@@ -43,7 +79,7 @@ fun ProfileScreen(
     var billingCity by remember { mutableStateOf("") }
     var billingCountry by remember { mutableStateOf("DE") }
 
-    var paymentMethodType by remember { mutableStateOf("None") } // "PayPal", "IBAN", "None"
+    var paymentMethodType by remember { mutableStateOf("None") }
     var paypalEmail by remember { mutableStateOf("") }
     var ibanNumber by remember { mutableStateOf("") }
 
@@ -87,65 +123,44 @@ fun ProfileScreen(
         }
     }
 
+    val scrollState = rememberScrollState()
+
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                WindowInsets.safeDrawing
+                    .only(WindowInsetsSides.Top + WindowInsetsSides.Bottom)
+                    .asPaddingValues()
+            )
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(start = 16.dp, end = 16.dp)
+                .padding(end = (LocalConfiguration.current.screenWidthDp * 0.1f).dp),
+            horizontalAlignment = Alignment.Start
         ) {
-            Text(text = "Profil bearbeiten", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            UserInfoSection(
+                firstName = firstName,
+                onFirstNameChange = { firstName = it },
+                lastName = lastName,
+                onLastNameChange = { lastName = it },
+                email = email,
+                onEmailChange = { email = it },
+                phone = phone,
+                onPhoneChange = { phone = it },
+                mobile = mobile,
+                onMobileChange = { mobile = it }
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("Vorname") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Nachname") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
-                label = { Text("Telefon") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-            )
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = mobile,
-                onValueChange = { mobile = it },
-                label = { Text("Handy") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-            )
-            Spacer(Modifier.height(16.dp))
-
             Text(text = "Lieferadresse", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             AddressFields(
                 street = street,
@@ -161,10 +176,11 @@ fun ProfileScreen(
                 country = country,
                 onCountryChange = { country = it }
             )
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(text = "Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             AddressFields(
                 street = billingStreet,
@@ -180,10 +196,11 @@ fun ProfileScreen(
                 country = billingCountry,
                 onCountryChange = { billingCountry = it }
             )
-            Spacer(Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(text = "Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             PaymentMethodSelector(
                 selectedMethod = paymentMethodType,
@@ -193,60 +210,82 @@ fun ProfileScreen(
                 ibanNumber = ibanNumber,
                 onIbanNumberChange = { ibanNumber = it }
             )
-            Spacer(Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    val shippingAddress = Address(
-                        street = street,
-                        houseNumber = houseNumber,
-                        addressAddition = if (addressAddition.isBlank()) null else addressAddition,
-                        postalCode = postalCode,
-                        city = city,
-                        country = country
-                    )
-                    val billingAddress = Address(
-                        street = billingStreet,
-                        houseNumber = billingHouseNumber,
-                        addressAddition = if (billingAddressAddition.isBlank()) null else billingAddressAddition,
-                        postalCode = billingPostalCode,
-                        city = billingCity,
-                        country = billingCountry
-                    )
-                    val paymentMethod = when (paymentMethodType) {
-                        "PayPal" -> PaymentMethod.PayPal(email = paypalEmail)
-                        "IBAN" -> PaymentMethod.IBAN(iban = ibanNumber)
-                        else -> PaymentMethod.None
-                    }
-                    user?.let {
-                        val updatedUser = it.copy(
-                            firstName = firstName,
-                            lastName = lastName,
-                            email = email,
-                            phone = phone.takeIf { it.isNotBlank() },
-                            mobile = mobile.takeIf { it.isNotBlank() },
-                            shippingAddress = shippingAddress,
-                            billingAddress = billingAddress,
-                            paymentMethod = paymentMethod
-                        )
-                        userProfileViewModel.updateUser(updatedUser)
-                    }
-                },
-                enabled = !isSaving,
+            Spacer(modifier = Modifier.height(72.dp))
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        ) {
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(
+                    text = errorMessage ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (isSaving) "Speichern..." else "Speichern")
-            }
+                Button(
+                    onClick = {
+                        userProfileViewModel.signOut()
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = !isSigningOut
+                ) {
+                    Text(if (isSigningOut) "Logging out..." else "Logout")
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-            Button(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Logout")
-            }
-
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, color = MaterialTheme.colorScheme.error)
+                Button(
+                    onClick = {
+                        val shippingAddress = Address(
+                            street = street,
+                            houseNumber = houseNumber,
+                            addressAddition = if (addressAddition.isBlank()) null else addressAddition,
+                            postalCode = postalCode,
+                            city = city,
+                            country = country
+                        )
+                        val billingAddress = Address(
+                            street = billingStreet,
+                            houseNumber = billingHouseNumber,
+                            addressAddition = if (billingAddressAddition.isBlank()) null else billingAddressAddition,
+                            postalCode = billingPostalCode,
+                            city = billingCity,
+                            country = billingCountry
+                        )
+                        val paymentMethod = when (paymentMethodType) {
+                            "PayPal" -> PaymentMethod.PayPal(email = paypalEmail)
+                            "IBAN" -> PaymentMethod.IBAN(iban = ibanNumber)
+                            else -> PaymentMethod.None
+                        }
+                        user?.let {
+                            val updatedUser = it.copy(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = email,
+                                phone = phone.takeIf { it.isNotBlank() },
+                                mobile = mobile.takeIf { it.isNotBlank() },
+                                shippingAddress = shippingAddress,
+                                billingAddress = billingAddress,
+                                paymentMethod = paymentMethod
+                            )
+                            userProfileViewModel.updateUser(updatedUser)
+                        }
+                    },
+                    enabled = !isSaving,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(if (isSaving) "Speichern..." else "Speichern")
+                }
             }
         }
     }

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.syntax_institut.androidabschlussprojekt.data.model.Category
 import de.syntax_institut.androidabschlussprojekt.data.model.Product
-import de.syntax_institut.androidabschlussprojekt.repository.ProductRepository
+import de.syntax_institut.androidabschlussprojekt.data.repository.ProductRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

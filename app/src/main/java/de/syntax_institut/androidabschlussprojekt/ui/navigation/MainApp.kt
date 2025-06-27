@@ -54,11 +54,14 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             composable("profile") {
                 val userProfileViewModel: UserProfileViewModel = koinViewModel()
                 ProfileScreen(
+                    navController = navController,
                     userProfileViewModel = userProfileViewModel,
                     onLogout = {
-                        userProfileViewModel.signOut()
+
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
+                            launchSingleTop = true
+                            restoreState = false
                         }
                     }
                 )

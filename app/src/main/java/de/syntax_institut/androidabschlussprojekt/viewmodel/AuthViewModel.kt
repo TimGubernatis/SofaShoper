@@ -30,6 +30,9 @@ class AuthViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _isSigningOut = MutableStateFlow(false)
+    val isSigningOut: StateFlow<Boolean> = _isSigningOut.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
@@ -112,8 +115,12 @@ class AuthViewModel(
 
     fun signOut() {
         viewModelScope.launch {
+            println("AuthViewModel: Logout gestartet")
+            _isSigningOut.value = true
             signOutUseCase()
             _user.value = null
+            _isSigningOut.value = false
+            println("AuthViewModel: Logout fertig, User=null")
         }
     }
 }

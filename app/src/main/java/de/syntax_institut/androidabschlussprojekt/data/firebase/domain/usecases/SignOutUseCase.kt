@@ -11,7 +11,7 @@ class SignOutUseCase(
         const val TAG = "SignOutUseCase"
     }
 
-    operator fun invoke() {
+    suspend operator fun invoke() {
         Log.i(TAG, "invoke: logging out user")
         authenticationService.signOut()
     }
