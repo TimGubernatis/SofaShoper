@@ -10,9 +10,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
+import java.net.SocketTimeoutException
 
 class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
-
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState
@@ -32,7 +33,6 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
     private var filterJob: Job? = null
 
-
     private val _selectedProduct = MutableStateFlow<Product?>(null)
     val selectedProduct: StateFlow<Product?> = _selectedProduct
 
@@ -46,7 +46,6 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
         fetchData()
     }
 
-
     fun fetchData() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
@@ -59,12 +58,21 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
                 _uiState.value = UiState.Success(products, categories)
 
                 scheduleFilter()
+            } catch (e: UnknownHostException) {
+                _uiState.value = UiState.Error("Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.")
+            } catch (e: SocketTimeoutException) {
+                _uiState.value = UiState.Error("Zeitüberschreitung bei der Verbindung. Bitte versuchen Sie es erneut.")
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Fehler beim Laden: ${e.message ?: "Unbekannter Fehler"}")
+                val errorMessage = when {
+                    e.message?.contains("404") == true -> "Daten nicht gefunden. Bitte versuchen Sie es später erneut."
+                    e.message?.contains("500") == true -> "Serverfehler. Bitte versuchen Sie es später erneut."
+                    e.message?.contains("403") == true -> "Zugriff verweigert. Bitte versuchen Sie es später erneut."
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message ?: "Unbekannter Fehler"}"
+                }
+                _uiState.value = UiState.Error(errorMessage)
             }
         }
     }
-
 
     fun updateQuery(query: String) {
         _searchQuery.value = query
@@ -91,11 +99,9 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
         }
     }
 
-
     fun getProductById(id: Int): Product? {
         return _allProducts.value.find { it.id == id }
     }
-
 
     fun loadProductById(id: Int) {
         viewModelScope.launch {
@@ -109,11 +115,24 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
                 } else {
                     _productError.value = "❌ Produkt mit ID $id nicht gefunden."
                 }
+            } catch (e: UnknownHostException) {
+                _productError.value = "❌ Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung."
+            } catch (e: SocketTimeoutException) {
+                _productError.value = "❌ Zeitüberschreitung bei der Verbindung. Bitte versuchen Sie es erneut."
             } catch (e: Exception) {
-                _productError.value = "❌ Fehler bei Produkt-ID $id: ${e.message}"
+                val errorMessage = when {
+                    e.message?.contains("404") == true -> "❌ Produkt nicht gefunden."
+                    e.message?.contains("500") == true -> "❌ Serverfehler. Bitte versuchen Sie es später erneut."
+                    else -> "❌ Fehler beim Laden des Produkts: ${e.message ?: "Unbekannter Fehler"}"
+                }
+                _productError.value = errorMessage
             } finally {
                 _productLoading.value = false
             }
         }
+    }
+
+    fun retryFetchData() {
+        fetchData()
     }
 }

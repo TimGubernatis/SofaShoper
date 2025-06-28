@@ -12,7 +12,11 @@ class SignOutUseCase(
     }
 
     suspend operator fun invoke() {
-        Log.i(TAG, "invoke: logging out user")
-        authenticationService.signOut()
+        try {
+            Log.i(TAG, "invoke: logging out user")
+            authenticationService.signOut()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during sign out: ${e.message}")
+        }
     }
 }

@@ -40,6 +40,10 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(isRegisterMode) {
+        authViewModel.clearError()
+    }
+
     val context = LocalContext.current
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -59,7 +63,9 @@ fun LoginScreen(
                 if (account != null) {
                     authViewModel.signInWithGoogle(account.idToken ?: "")
                 }
-            } catch (_: ApiException) {}
+            } catch (e: ApiException) {
+                // Google Sign-In Fehler wird bereits im AuthViewModel behandelt
+            }
         }
     }
 
@@ -71,9 +77,19 @@ fun LoginScreen(
     ) {
         EmailPasswordInput(
             email = email,
-            onEmailChange = { email = it },
+            onEmailChange = { 
+                email = it
+                if (errorMessage != null) {
+                    authViewModel.clearError()
+                }
+            },
             password = password,
-            onPasswordChange = { password = it }
+            onPasswordChange = { 
+                password = it
+                if (errorMessage != null) {
+                    authViewModel.clearError()
+                }
+            }
         )
         Spacer(Modifier.height(16.dp))
 
@@ -94,6 +110,9 @@ fun LoginScreen(
             onClick = onCancel,
             enabled = !isLoading
         )
-        ErrorMessageLogin(errorMessage)
-        }
+        ErrorMessageLogin(
+            errorMessage = errorMessage,
+            onDismiss = { authViewModel.clearError() }
+        )
     }
+}

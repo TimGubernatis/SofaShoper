@@ -14,18 +14,15 @@ class AuthenticationService {
 
     private val auth = FirebaseAuth.getInstance()
 
-
     val userId: Flow<String?> = callbackFlow {
-        val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser?.uid)
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            trySend(firebaseAuth.currentUser?.uid)
         }
         auth.addAuthStateListener(authStateListener)
         awaitClose { auth.removeAuthStateListener(authStateListener) }
     }.distinctUntilChanged()
 
-
     val isSignedIn: Flow<Boolean> = userId.map { it != null }.distinctUntilChanged()
-
 
     suspend fun signInWithGoogle(token: String): FirebaseUser? {
         val credential = GoogleAuthProvider.getCredential(token, null)
@@ -33,18 +30,15 @@ class AuthenticationService {
         return authResult.user
     }
 
-
     suspend fun registerWithEmail(email: String, password: String): FirebaseUser? {
         val authResult = auth.createUserWithEmailAndPassword(email, password).await()
         return authResult.user
     }
 
-
     suspend fun signInWithEmail(email: String, password: String): FirebaseUser? {
         val authResult = auth.signInWithEmailAndPassword(email, password).await()
         return authResult.user
     }
-
 
     fun signOut() {
         auth.signOut()

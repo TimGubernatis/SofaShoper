@@ -1,66 +1,88 @@
 package de.syntax_institut.androidabschlussprojekt.ui.screen_detail
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
-import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.components.ProductDetailContent
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
-import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
+import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.runtime.getValue
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     productId: Int,
-    viewModel: HomeViewModel = koinViewModel()
+    homeViewModel: HomeViewModel = koinViewModel(),
+    cartViewModel: CartViewModel = koinViewModel(),
+    onBackClick: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val product by homeViewModel.selectedProduct.collectAsState()
+    val isLoading by homeViewModel.productLoading.collectAsState()
+    val error by homeViewModel.productError.collectAsState()
+    val isInCart by remember { derivedStateOf { cartViewModel.isInCart(productId) } }
 
-    when (val state = uiState) {
-        is UiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
+    LaunchedEffect(productId) {
+        homeViewModel.loadProductById(productId)
+    }
 
-        is UiState.Error -> {
-            ErrorMessage(
-                message = state.message,
-                showBackButton = true
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Produktdetails") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Zurück")
+                    }
+                }
             )
         }
-
-        is UiState.Success -> {
-            val product = viewModel.getProductById(productId)
-            if (product == null) {
-                ErrorMessage(
-                    message = "❌ Produkt mit ID $productId nicht gefunden.",
-                    showBackButton = true
-                )
-            } else {
-                Scaffold(
-                    bottomBar = {
-                        PrimaryButton(
-                            text = "In den Warenkorb",
-                            onClick = { /* TODO */ },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                ) { paddingValues ->
+                }
+                
+                error != null -> {
+                    ErrorMessage(
+                        message = error!!,
+                        showBackButton = true,
+                        showRetryButton = true,
+                        onBackClick = onBackClick,
+                        onRetryClick = { homeViewModel.loadProductById(productId) }
+                    )
+                }
+                
+                product != null -> {
                     ProductDetailContent(
-                        product = product,
-                        modifier = Modifier.padding(paddingValues)
+                        product = product!!,
+                        isInCart = isInCart,
+                        onAddToCart = {
+                            product?.let { cartViewModel.addToCart(it) }
+                        }
+                    )
+                }
+                
+                else -> {
+                    ErrorMessage(
+                        message = "Produkt nicht gefunden",
+                        showBackButton = true,
+                        onBackClick = onBackClick
                     )
                 }
             }

@@ -9,6 +9,10 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,8 +42,13 @@ class AuthViewModel(
 
     init {
         viewModelScope.launch {
-            observeCurrentUserUseCase().collect { currentUser ->
-                _user.value = currentUser
+            try {
+                observeCurrentUserUseCase().collect { currentUser ->
+                    _user.value = currentUser
+                }
+            } catch (e: Exception) {
+                // Firebase nicht verfügbar, App trotzdem funktionsfähig halten
+                _errorMessage.value = "Authentifizierung nicht verfügbar"
             }
         }
     }
@@ -60,7 +69,12 @@ class AuthViewModel(
                     _user.value = user
                 }
             } catch (e: Exception) {
-                _errorMessage.value = e.localizedMessage ?: "Unbekannter Fehler"
+                val errorMessage = when {
+                    e.message?.contains("network") == true -> "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung."
+                    e.message?.contains("invalid") == true -> "Ungültige Anmeldedaten. Bitte versuchen Sie es erneut."
+                    else -> "Fehler bei der Google-Anmeldung: ${e.localizedMessage ?: "Unbekannter Fehler"}"
+                }
+                _errorMessage.value = errorMessage
             } finally {
                 _isLoading.value = false
             }
@@ -78,8 +92,17 @@ class AuthViewModel(
                     val user = userRepository.getUser(it.uid)
                     _user.value = user
                 }
+            } catch (e: FirebaseAuthInvalidUserException) {
+                _errorMessage.value = "Benutzer nicht gefunden. Bitte überprüfen Sie Ihre E-Mail-Adresse."
+            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                _errorMessage.value = "Falsches Passwort. Bitte versuchen Sie es erneut."
             } catch (e: Exception) {
-                _errorMessage.value = e.localizedMessage ?: "Fehler beim Login"
+                val errorMessage = when {
+                    e.message?.contains("network") == true -> "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung."
+                    e.message?.contains("too many requests") == true -> "Zu viele Anmeldeversuche. Bitte warten Sie einen Moment."
+                    else -> "Fehler beim Login: ${e.localizedMessage ?: "Unbekannter Fehler"}"
+                }
+                _errorMessage.value = errorMessage
             } finally {
                 _isLoading.value = false
             }
@@ -105,8 +128,17 @@ class AuthViewModel(
                     userRepository.saveUser(user)
                     _user.value = user
                 }
+            } catch (e: FirebaseAuthWeakPasswordException) {
+                _errorMessage.value = "Passwort zu schwach. Bitte verwenden Sie mindestens 6 Zeichen."
+            } catch (e: FirebaseAuthUserCollisionException) {
+                _errorMessage.value = "Ein Konto mit dieser E-Mail-Adresse existiert bereits."
             } catch (e: Exception) {
-                _errorMessage.value = e.localizedMessage ?: "Fehler bei der Registrierung"
+                val errorMessage = when {
+                    e.message?.contains("network") == true -> "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung."
+                    e.message?.contains("invalid email") == true -> "Ungültige E-Mail-Adresse."
+                    else -> "Fehler bei der Registrierung: ${e.localizedMessage ?: "Unbekannter Fehler"}"
+                }
+                _errorMessage.value = errorMessage
             } finally {
                 _isLoading.value = false
             }
@@ -117,10 +149,19 @@ class AuthViewModel(
         viewModelScope.launch {
             println("AuthViewModel: Logout gestartet")
             _isSigningOut.value = true
-            signOutUseCase()
-            _user.value = null
-            _isSigningOut.value = false
-            println("AuthViewModel: Logout fertig, User=null")
+            try {
+                signOutUseCase()
+                _user.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = "Fehler beim Abmelden: ${e.localizedMessage ?: "Unbekannter Fehler"}"
+            } finally {
+                _isSigningOut.value = false
+                println("AuthViewModel: Logout fertig, User=null")
+            }
         }
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 }

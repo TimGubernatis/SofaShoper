@@ -6,10 +6,13 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.Use
 import de.syntax_institut.androidabschlussprojekt.data.firebase.services.AuthenticationService
 import de.syntax_institut.androidabschlussprojekt.data.remote.ProductApiService
 import de.syntax_institut.androidabschlussprojekt.data.repository.ProductRepository
+import de.syntax_institut.androidabschlussprojekt.data.repository.CartRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.SettingsViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.CheckoutViewModel
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.ObserveCurrentUserUseCase
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.SignOutUseCase
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.SignInWithGoogleUseCase
@@ -43,6 +46,7 @@ val appModule = module {
     }
 
     single { ProductRepository(get()) }
+    single { CartRepository() }
 
     singleOf(::AuthenticationService)
 
@@ -56,4 +60,6 @@ val appModule = module {
     viewModel { UserProfileViewModel(get(), get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { SettingsViewModel(get(), get()) }
+    viewModel { CartViewModel(get()) }
+    viewModel { CheckoutViewModel(get()) }
 }

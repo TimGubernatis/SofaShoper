@@ -12,6 +12,8 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_home.HomeScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.ProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.FavoritesScreen
+import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.CartScreen
+import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.CheckoutScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -28,7 +30,7 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             composable("home") {
                 HomeScreen(
                     onProductClick = { productId -> navController.navigate("productDetail/$productId") },
-                    onCartClick = { /* TODO */ },
+                    onCartClick = { navController.navigate("cart") },
                     onProfileClick = {
                         if (isUserLoggedIn) navController.navigate("profile") else navController.navigate("login")
                     },
@@ -40,7 +42,12 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
 
             composable("productDetail/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull()
-                productId?.let { ProductDetailScreen(productId = it) }
+                productId?.let { 
+                    ProductDetailScreen(
+                        productId = it,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
             }
 
             composable("login") {
@@ -57,7 +64,6 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
                     navController = navController,
                     userProfileViewModel = userProfileViewModel,
                     onLogout = {
-
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
                             launchSingleTop = true
@@ -69,6 +75,26 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
 
             composable("favorites") {
                 FavoritesScreen()
+            }
+
+            composable("cart") {
+                CartScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onCheckoutClick = { navController.navigate("checkout") }
+                )
+            }
+
+            composable("checkout") {
+                CheckoutScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onOrderSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                            launchSingleTop = true
+                            restoreState = false
+                        }
+                    }
+                )
             }
         }
     }

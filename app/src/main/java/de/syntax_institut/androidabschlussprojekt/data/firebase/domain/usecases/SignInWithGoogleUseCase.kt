@@ -16,14 +16,22 @@ class SignInWithGoogleUseCase(
     }
 
     suspend operator fun invoke(authToken: String): FirebaseUser? {
-        Log.i(TAG, "invoke: google sign-in with authToken=$authToken")
+        return try {
+            Log.i(TAG, "invoke: google sign-in with authToken=$authToken")
 
-        val firebaseGoogleUser = authenticationService.signInWithGoogle(authToken)
-        requireNotNull(firebaseGoogleUser) { "The user should not be null" }
+            val firebaseGoogleUser = authenticationService.signInWithGoogle(authToken)
+            if (firebaseGoogleUser == null) {
+                Log.e(TAG, "Google sign-in failed: user is null")
+                return null
+            }
 
-        val user = FirebaseAuthUserMapper.toDomain(firebaseGoogleUser)
-        userRepository.saveUser(user)
+            val user = FirebaseAuthUserMapper.toDomain(firebaseGoogleUser)
+            userRepository.saveUser(user)
 
-        return firebaseGoogleUser
+            firebaseGoogleUser
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during Google sign-in: ${e.message}")
+            null
+        }
     }
 }

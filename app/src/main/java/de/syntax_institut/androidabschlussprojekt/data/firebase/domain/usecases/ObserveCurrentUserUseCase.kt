@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.catch
 
 class ObserveCurrentUserUseCase(
     private val authenticationService: AuthenticationService,
@@ -21,13 +22,21 @@ class ObserveCurrentUserUseCase(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke() : Flow<User?> {
-        return authenticationService.userId.flatMapConcat { userId ->
-            Log.i(TAG, "invoke: observing user with id=$userId")
-            if (userId == null) {
-                flowOf(null)
-            } else {
-                userRepository.observeUser(userId)
+        return try {
+            authenticationService.userId.flatMapConcat { userId ->
+                Log.i(TAG, "invoke: observing user with id=$userId")
+                if (userId == null) {
+                    flowOf(null)
+                } else {
+                    userRepository.observeUser(userId)
+                }
+            }.catch { e ->
+                Log.e(TAG, "Error observing user: ${e.message}")
+                emit(null)
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing user observation: ${e.message}")
+            flowOf(null)
         }
     }
 }

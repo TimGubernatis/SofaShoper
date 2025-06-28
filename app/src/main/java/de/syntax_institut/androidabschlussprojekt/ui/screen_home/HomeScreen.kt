@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,40 +15,74 @@ import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CategoryRow
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CollapsibleSearchBar
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.*
+import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = koinViewModel(),
+    homeViewModel: HomeViewModel = koinViewModel(),
+    cartViewModel: CartViewModel = koinViewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit,
     onFavoritesClick: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val uiState by homeViewModel.uiState.collectAsState()
+    val selectedCategory by homeViewModel.selectedCategory.collectAsState()
+    val searchQuery by homeViewModel.searchQuery.collectAsState()
+    val itemCount by cartViewModel.itemCount.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Welcome, Tim 👋") },
+                title = { 
+                    if (!isSearching) {
+                        Text("Welcome, Tim 👋")
+                    }
+                },
                 actions = {
-                    IconButton(onClick = onCartClick) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
+                    // Search Icon
+                    IconButton(onClick = { isSearching = !isSearching }) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
                     }
-                    IconButton(onClick = onProfileClick) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile")
-                    }
-                    IconButton(onClick = onFavoritesClick) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Favorites")
+                    
+                    // Andere Icons nur anzeigen wenn nicht am Suchen
+                    if (!isSearching) {
+                        IconButton(onClick = onProfileClick) {
+                            Icon(Icons.Default.Person, contentDescription = "Profile")
+                        }
+                        IconButton(onClick = onFavoritesClick) {
+                            Icon(Icons.Default.Favorite, contentDescription = "Favorites")
+                        }
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            // Floating Action Button für Warenkorb
+            FloatingActionButton(
+                onClick = onCartClick,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Box {
+                    Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
+                    if (itemCount > 0) {
+                        Badge(
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+                        ) {
+                            Text(
+                                text = if (itemCount > 99) "99+" else itemCount.toString(),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+                }
+            }
         }
     ) { padding ->
         Column(
@@ -55,34 +90,42 @@ fun HomeScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            CollapsibleSearchBar(
-                query = searchQuery,
-                onQueryChange = viewModel::updateQuery,
-                isSearching = isSearching,
-                onSearchToggle = { isSearching = !isSearching }
-            )
+            // Suchleiste nur anzeigen wenn aktiviert
+            if (isSearching) {
+                CollapsibleSearchBar(
+                    query = searchQuery,
+                    onQueryChange = homeViewModel::updateQuery,
+                    isSearching = isSearching,
+                    onSearchToggle = { isSearching = !isSearching }
+                )
+            }
 
             when (val state = uiState) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = androidx.compose.ui.Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
 
                 is UiState.Error -> {
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(16.dp)
+                    ErrorMessage(
+                        message = state.message,
+                        showRetryButton = true,
+                        onRetryClick = { homeViewModel.retryFetchData() }
                     )
                 }
 
                 is UiState.Success -> {
                     val categories = state.categories
-                    val products by viewModel.filteredProducts.collectAsState()
+                    val products by homeViewModel.filteredProducts.collectAsState()
 
                     CategoryRow(
                         categories = categories,
                         selectedCategory = selectedCategory,
-                        onCategoryClick = { viewModel.selectCategory(it) }
+                        onCategoryClick = { homeViewModel.selectCategory(it) }
                     )
 
                     DealOfTheDayBanner()
@@ -94,7 +137,11 @@ fun HomeScreen(
                         items(products, key = { it.id }) { product ->
                             ProductCard(
                                 product = product,
-                                onClick = { onProductClick(product.id) }
+                                onClick = { onProductClick(product.id) },
+                                onAddToCart = { 
+                                    cartViewModel.addToCart(product)
+                                },
+                                isInCart = cartViewModel.isInCart(product.id)
                             )
                         }
                     }

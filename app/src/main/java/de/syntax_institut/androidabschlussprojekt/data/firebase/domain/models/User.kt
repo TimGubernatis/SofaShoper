@@ -1,9 +1,7 @@
 package de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models
 
-import com.google.firebase.firestore.DocumentId
-
 data class User(
-    @DocumentId val id: String? = null,
+    val id: String? = null,
     val email: String = "",
     val firstName: String = "",
     val lastName: String = "",

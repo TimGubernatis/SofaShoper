@@ -24,12 +24,14 @@ fun AuthButtons(
             PrimaryButton(
                 text = "Registrieren",
                 onClick = onRegister,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isLoading = isLoading
             )
             Spacer(Modifier.height(8.dp))
             TextButton(
                 onClick = onToggleMode,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ) {
                 Text("Bereits ein Konto? Login hier")
             }
@@ -37,12 +39,14 @@ fun AuthButtons(
             PrimaryButton(
                 text = "Login",
                 onClick = onLogin,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isLoading = isLoading
             )
             Spacer(Modifier.height(8.dp))
             TextButton(
                 onClick = onToggleMode,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ) {
                 Text("Noch kein Konto? Registrieren")
             }

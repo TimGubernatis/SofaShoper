@@ -14,7 +14,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        FirebaseApp.initializeApp(this)
+        // Firebase initialisieren (falls noch nicht geschehen)
+        try {
+            FirebaseApp.initializeApp(this)
+        } catch (e: Exception) {
+            // Firebase bereits initialisiert
+        }
 
         enableEdgeToEdge()
         setContent {
