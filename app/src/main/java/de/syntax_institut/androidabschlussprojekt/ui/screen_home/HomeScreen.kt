@@ -20,6 +20,9 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
+import androidx.compose.ui.res.stringResource
+import de.syntax_institut.androidabschlussprojekt.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +32,8 @@ fun HomeScreen(
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onFavoritesClick: () -> Unit
+    onFavoritesClick: () -> Unit,
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     val selectedCategory by homeViewModel.selectedCategory.collectAsState()
@@ -38,13 +42,19 @@ fun HomeScreen(
     var isSearching by remember { mutableStateOf(false) }
 
     val filteredProducts by homeViewModel.filteredProducts.collectAsState()
+    val user by authViewModel.user.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     if (!isSearching) {
-                        Text("Welcome, Tim 👋")
+                        if (user == null) {
+                            Text(stringResource(id = R.string.welcome_guest))
+                        } else {
+                            val name = user?.firstName?.takeIf { it.isNotBlank() } ?: user?.displayName ?: "User"
+                            Text(stringResource(id = R.string.welcome_user, name))
+                        }
                     }
                 },
                 actions = {
@@ -98,7 +108,7 @@ fun HomeScreen(
 
                 is UiState.Error -> {
                     ErrorMessage(
-                        message = state.message,
+                        message = stringResource(state.messageRes),
                         showRetryButton = true,
                         onRetryClick = { homeViewModel.retryFetchData() }
                     )

@@ -47,7 +47,6 @@ class AuthViewModel(
                     _user.value = currentUser
                 }
             } catch (e: Exception) {
-                // Firebase nicht verfügbar, App trotzdem funktionsfähig halten
                 _errorMessage.value = "Authentifizierung nicht verfügbar"
             }
         }
@@ -147,7 +146,6 @@ class AuthViewModel(
 
     fun signOut() {
         viewModelScope.launch {
-            println("AuthViewModel: Logout gestartet")
             _isSigningOut.value = true
             try {
                 signOutUseCase()
@@ -156,12 +154,20 @@ class AuthViewModel(
                 _errorMessage.value = "Fehler beim Abmelden: ${e.localizedMessage ?: "Unbekannter Fehler"}"
             } finally {
                 _isSigningOut.value = false
-                println("AuthViewModel: Logout fertig, User=null")
             }
         }
     }
 
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    fun sendPasswordResetEmail(email: String) {
+        viewModelScope.launch {
+            try {
+                FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+            } catch (e: Exception) {
+            }
+        }
     }
 }

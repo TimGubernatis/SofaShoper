@@ -7,7 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Payment
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,20 +19,80 @@ import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CheckoutState
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CheckoutViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
+import de.syntax_institut.androidabschlussprojekt.R
+import androidx.compose.ui.res.stringResource
+import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
     checkoutViewModel: CheckoutViewModel = koinViewModel(),
     onBackClick: () -> Unit = {},
-    onOrderSuccess: () -> Unit = {}
+    onOrderSuccess: () -> Unit = {},
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     val checkoutState by checkoutViewModel.checkoutState.collectAsState()
     val cartItems by checkoutViewModel.cartItems.collectAsState()
     val cartTotal by checkoutViewModel.cartTotal.collectAsState()
     val shippingAddress by checkoutViewModel.shippingAddress.collectAsState()
     val selectedPaymentMethod by checkoutViewModel.selectedPaymentMethod.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var createAccount by remember { mutableStateOf(false) }
+    var password by remember { mutableStateOf("") }
+    var passwordRepeat by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    val user by authViewModel.user.collectAsState()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var showPasswordDialog by remember { mutableStateOf(false) }
+
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                if (account != null) {
+                    authViewModel.signInWithGoogle(account.idToken ?: "")
+                }
+            } catch (_: ApiException) {}
+        }
+    }
 
     LaunchedEffect(checkoutState) {
         if (checkoutState is CheckoutState.Success) {
@@ -42,15 +103,27 @@ fun CheckoutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Zur Kasse") },
+                title = { Text(stringResource(R.string.checkout_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.checkout_back))
                     }
                 }
             )
         }
     ) { padding ->
+        if (showPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showPasswordDialog = false },
+                title = { Text("Fehler") },
+                text = { Text(stringResource(R.string.checkout_passwords_not_matching)) },
+                confirmButton = {
+                    Button(onClick = { showPasswordDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
         when (val state = checkoutState) {
             is CheckoutState.Loading -> {
                 Box(
@@ -64,18 +137,16 @@ fun CheckoutScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         CircularProgressIndicator()
-                        Text("Bestellung wird verarbeitet...")
+                        Text(stringResource(R.string.checkout_processing))
                     }
                 }
             }
-            
             is CheckoutState.Success -> {
                 OrderSuccessScreen(
                     order = state.order,
                     onBackToHome = onOrderSuccess
                 )
             }
-            
             is CheckoutState.Error -> {
                 Box(
                     modifier = Modifier
@@ -97,13 +168,12 @@ fun CheckoutScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         PrimaryButton(
-                            text = "Erneut versuchen",
+                            text = stringResource(R.string.checkout_retry),
                             onClick = { checkoutViewModel.resetCheckout() }
                         )
                     }
                 }
             }
-            
             else -> {
                 CheckoutContent(
                     cartItems = cartItems,
@@ -112,8 +182,32 @@ fun CheckoutScreen(
                     selectedPaymentMethod = selectedPaymentMethod,
                     onAddressChange = { checkoutViewModel.updateShippingAddress(it) },
                     onPaymentMethodSelect = { checkoutViewModel.selectPaymentMethod(it) },
-                    onPlaceOrder = { checkoutViewModel.placeOrder() },
-                    modifier = Modifier.padding(padding)
+                    onPlaceOrder = {
+                        if (createAccount) {
+                            if (password != passwordRepeat) {
+                                showPasswordDialog = true
+                                return@CheckoutContent
+                            }
+                            if (email.isNotBlank() && password.isNotBlank()) {
+                                authViewModel.register(email, password, shippingAddress.firstName, shippingAddress.lastName)
+                            }
+                        }
+                        checkoutViewModel.placeOrder()
+                    },
+                    modifier = Modifier.padding(padding),
+                    email = email,
+                    onEmailChange = { email = it },
+                    createAccount = createAccount,
+                    onCreateAccountChange = { createAccount = it },
+                    password = password,
+                    onPasswordChange = { password = it },
+                    passwordRepeat = passwordRepeat,
+                    onPasswordRepeatChange = { passwordRepeat = it },
+                    passwordVisible = passwordVisible,
+                    onPasswordVisibleChange = { passwordVisible = it },
+                    user = user,
+                    onGoogleSignIn = { launcher.launch(googleSignInClient.signInIntent) },
+                    onForgotPassword = { if (email.isNotBlank()) authViewModel.sendPasswordResetEmail(email) }
                 )
             }
         }
@@ -129,7 +223,20 @@ private fun CheckoutContent(
     onAddressChange: (ShippingAddress) -> Unit,
     onPaymentMethodSelect: (PaymentMethod) -> Unit,
     onPlaceOrder: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    email: String,
+    onEmailChange: (String) -> Unit,
+    createAccount: Boolean,
+    onCreateAccountChange: (Boolean) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    passwordRepeat: String,
+    onPasswordRepeatChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onPasswordVisibleChange: (Boolean) -> Unit,
+    user: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User?,
+    onGoogleSignIn: () -> Unit,
+    onForgotPassword: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -138,7 +245,7 @@ private fun CheckoutContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Order Summary
+
         Card {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -188,19 +295,71 @@ private fun CheckoutContent(
             }
         }
         
-        // Shipping Address
+
         AddressSection(
             address = shippingAddress,
             onAddressChange = onAddressChange
         )
         
-        // Payment Method
+
         PaymentMethodSection(
             selectedMethod = selectedPaymentMethod,
             onMethodSelect = onPaymentMethodSelect
         )
         
-        // Place Order Button
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = onEmailChange,
+            label = { Text(stringResource(R.string.checkout_email_label)) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = user == null
+        )
+
+
+        if (user == null) {
+            GoogleSignInButton(onClick = onGoogleSignIn)
+        }
+
+
+        if (user == null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = createAccount,
+                    onCheckedChange = onCreateAccountChange
+                )
+                Text(stringResource(R.string.checkout_create_account))
+            }
+            if (createAccount) {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    label = { Text(stringResource(R.string.checkout_password_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { onPasswordVisibleChange(!passwordVisible) }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (passwordVisible) "Verbergen" else "Anzeigen"
+                            )
+                        }
+                    }
+                )
+                OutlinedTextField(
+                    value = passwordRepeat,
+                    onValueChange = onPasswordRepeatChange,
+                    label = { Text("Passwort wiederholen") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                )
+                TextButton(onClick = onForgotPassword, enabled = email.isNotBlank()) {
+                    Text("Passwort vergessen?")
+                }
+            }
+        }
+
+
         PrimaryButton(
             text = "Bestellung aufgeben",
             onClick = onPlaceOrder,
@@ -210,7 +369,9 @@ private fun CheckoutContent(
                      shippingAddress.lastName.isNotBlank() &&
                      shippingAddress.street.isNotBlank() &&
                      shippingAddress.city.isNotBlank() &&
-                     shippingAddress.postalCode.isNotBlank()
+                     shippingAddress.postalCode.isNotBlank() &&
+                     email.isNotBlank() &&
+                     (!createAccount || password.isNotBlank())
         )
     }
 }

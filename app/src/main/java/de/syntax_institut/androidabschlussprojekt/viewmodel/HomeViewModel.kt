@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import java.net.SocketTimeoutException
+import de.syntax_institut.androidabschlussprojekt.R
 
 class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
@@ -56,17 +57,17 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
                 _categories.value = categories
                 _uiState.value = UiState.Success(emptyList(), categories)
             } catch (e: UnknownHostException) {
-                _uiState.value = UiState.Error("Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.")
+                _uiState.value = UiState.Error(R.string.error_no_internet)
             } catch (e: SocketTimeoutException) {
-                _uiState.value = UiState.Error("Zeitüberschreitung bei der Verbindung. Bitte versuchen Sie es erneut.")
+                _uiState.value = UiState.Error(R.string.error_timeout)
             } catch (e: Exception) {
-                val errorMessage = when {
-                    e.message?.contains("404") == true -> "Daten nicht gefunden. Bitte versuchen Sie es später erneut."
-                    e.message?.contains("500") == true -> "Serverfehler. Bitte versuchen Sie es später erneut."
-                    e.message?.contains("403") == true -> "Zugriff verweigert. Bitte versuchen Sie es später erneut."
-                    else -> "Ein unerwarteter Fehler ist aufgetreten: "+(e.message ?: "Unbekannter Fehler")
+                val errorRes = when {
+                    e.message?.contains("404") == true -> R.string.error_not_found
+                    e.message?.contains("500") == true -> R.string.error_server
+                    e.message?.contains("403") == true -> R.string.error_forbidden
+                    else -> R.string.error_unknown
                 }
-                _uiState.value = UiState.Error(errorMessage)
+                _uiState.value = UiState.Error(errorRes)
             }
         }
     }
@@ -81,7 +82,7 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
                 _uiState.value = UiState.Success(products, _categories.value)
             } catch (e: Exception) {
                 _productError.value = e.message
-                _uiState.value = UiState.Error("Fehler beim Laden der Produkte: ${e.message}")
+                _uiState.value = UiState.Error(R.string.error_order)
             } finally {
                 _productLoading.value = false
             }

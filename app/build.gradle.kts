@@ -80,19 +80,14 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.material.icons.extended)
-
-    // Credentials & Google Auth
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
-
-    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
-
-    // Paging Compose
     implementation(libs.androidx.paging.compose)
+
 }

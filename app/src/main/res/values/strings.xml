@@ -1,4 +1,34 @@
 <resources>
     <string name="app_name">AndroidAbschlussprojekt</string>
     <string name="default_web_client_id">506345427545-cn6feb6pck7imogmrtpdbpd2cs89j67m.apps.googleusercontent.com</string>
+    <string name="welcome_guest">Willkommen, Gast 👋</string>
+    <string name="welcome_user">Willkommen, %1$s 👋</string>
+    <string name="checkout_email_label">E-Mail für Bestätigung</string>
+    <string name="checkout_create_account">Account anlegen und Daten speichern</string>
+    <string name="checkout_password_label">Passwort für neuen Account</string>
+    <string name="checkout_close_success">Schließen</string>
+    <string name="checkout_google_signin">Mit Google anmelden</string>
+    <string name="checkout_password_repeat">Passwort wiederholen</string>
+    <string name="checkout_password_show">Passwort anzeigen</string>
+    <string name="checkout_password_hide">Passwort verbergen</string>
+    <string name="checkout_forgot_password">Passwort vergessen?</string>
+    <string name="checkout_passwords_not_matching">Die Passwörter stimmen nicht überein.</string>
+    <string name="error_no_internet">Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.</string>
+    <string name="error_timeout">Zeitüberschreitung bei der Verbindung. Bitte versuchen Sie es erneut.</string>
+    <string name="error_not_found">Daten nicht gefunden. Bitte versuchen Sie es später erneut.</string>
+    <string name="error_server">Serverfehler. Bitte versuchen Sie es später erneut.</string>
+    <string name="error_forbidden">Zugriff verweigert. Bitte versuchen Sie es später erneut.</string>
+    <string name="error_unknown">Ein unerwarteter Fehler ist aufgetreten.</string>
+    <string name="error_product_not_found">❌ Produkt nicht gefunden.</string>
+    <string name="error_invalid_login">Ungültige Anmeldedaten. Bitte versuchen Sie es erneut.</string>
+    <string name="error_network">Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung.</string>
+    <string name="error_too_many_requests">Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.</string>
+    <string name="error_weak_password">Passwort zu schwach. Bitte verwenden Sie mindestens 6 Zeichen.</string>
+    <string name="error_email_exists">Ein Konto mit dieser E-Mail-Adresse existiert bereits.</string>
+    <string name="error_invalid_email">Ungültige E-Mail-Adresse.</string>
+    <string name="error_order">Fehler beim Bestellen: %1$s</string>
+    <string name="checkout_title">Zur Kasse</string>
+    <string name="checkout_back">Zurück</string>
+    <string name="checkout_processing">Bestellung wird verarbeitet...</string>
+    <string name="checkout_retry">Erneut versuchen</string>
 </resources>
