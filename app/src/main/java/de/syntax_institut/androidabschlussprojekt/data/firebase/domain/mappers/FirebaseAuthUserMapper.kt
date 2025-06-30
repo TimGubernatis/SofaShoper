@@ -36,7 +36,7 @@ object FirebaseAuthUserMapper {
             country = billingMap["country"] as? String ?: "DE"
         )
 
-        // Updated PaymentMethod handling for data class
+
         val paymentMethod = if (paymentMap != null) {
             PaymentMethod(
                 type = paymentMap["type"] as? String ?: "None",
@@ -78,7 +78,7 @@ object FirebaseAuthUserMapper {
     }
 
     fun toMap(user: User): Map<String, Any?> {
-        // PaymentMethod is now a data class, so we can serialize it directly
+
         val paymentMap = user.paymentMethod?.let { pm ->
             mapOf(
                 "type" to pm.type,

@@ -20,9 +20,6 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,22 +37,20 @@ fun HomeScreen(
     val itemCount by cartViewModel.itemCount.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
 
-    val pagedProducts = homeViewModel.pagedProducts.collectAsLazyPagingItems()
+    val filteredProducts by homeViewModel.filteredProducts.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     if (!isSearching) {
                         Text("Welcome, Tim 👋")
                     }
                 },
                 actions = {
-
                     IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
-                    
 
                     if (!isSearching) {
                         IconButton(onClick = onProfileClick) {
@@ -69,23 +64,10 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-
-            FloatingActionButton(
-                onClick = onCartClick,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Box {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
-                    if (itemCount > 0) {
-                        Badge(
-                            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-                        ) {
-                            Text(
-                                text = if (itemCount > 99) "99+" else itemCount.toString(),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
+            FloatingActionButton(onClick = onCartClick) {
+                Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
+                if (itemCount > 0) {
+                    Text(itemCount.toString(), modifier = Modifier.padding(start = 4.dp))
                 }
             }
         }
@@ -95,7 +77,6 @@ fun HomeScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-
             if (isSearching) {
                 CollapsibleSearchBar(
                     query = searchQuery,
@@ -135,15 +116,13 @@ fun HomeScreen(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(pagedProducts) { product ->
-                            if (product != null) {
-                                ProductCard(
-                                    product = product,
-                                    onClick = { onProductClick(product.id) },
-                                    onAddToCart = { cartViewModel.addToCart(product) },
-                                    isInCart = cartViewModel.isInCart(product.id)
-                                )
-                            }
+                        items(filteredProducts, key = { it.id }) { product ->
+                            ProductCard(
+                                product = product,
+                                onClick = { onProductClick(product.id) },
+                                onAddToCart = { cartViewModel.addToCart(product) },
+                                isInCart = cartViewModel.isInCart(product.id)
+                            )
                         }
                     }
                 }

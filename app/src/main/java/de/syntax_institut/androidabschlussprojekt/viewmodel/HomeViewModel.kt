@@ -12,20 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import java.net.SocketTimeoutException
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import kotlinx.coroutines.flow.Flow
 
 class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState
-
-    private val _allProducts = MutableStateFlow<List<Product>>(emptyList())
-    private val _filteredProducts = MutableStateFlow<List<Product>>(emptyList())
-    val filteredProducts: StateFlow<List<Product>> = _filteredProducts
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: StateFlow<List<Category>> = _categories
@@ -47,28 +38,23 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
     private val _productError = MutableStateFlow<String?>(null)
     val productError: StateFlow<String?> = _productError
 
-    val pagedProducts: Flow<PagingData<Product>> = Pager(
-        PagingConfig(pageSize = 20)
-    ) {
-        repository.getProductPagingSource()
-    }.flow.cachedIn(viewModelScope)
+    private val _allProducts = MutableStateFlow<List<Product>>(emptyList())
+    val allProducts: StateFlow<List<Product>> = _allProducts
+
+    private val _filteredProducts = MutableStateFlow<List<Product>>(emptyList())
+    val filteredProducts: StateFlow<List<Product>> = _filteredProducts
 
     init {
-        fetchData()
+        fetchCategories()
+        fetchProducts()
     }
 
-    fun fetchData() {
+    private fun fetchCategories() {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
             try {
-                val products = repository.getAllProducts()
                 val categories = repository.getAllCategoriesFromApi()
-
-                _allProducts.value = products
                 _categories.value = categories
-                _uiState.value = UiState.Success(products, categories)
-
-                scheduleFilter()
+                _uiState.value = UiState.Success(emptyList(), categories)
             } catch (e: UnknownHostException) {
                 _uiState.value = UiState.Error("Keine Internetverbindung. Bitte überprüfen Sie Ihre Verbindung.")
             } catch (e: SocketTimeoutException) {
@@ -78,40 +64,54 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
                     e.message?.contains("404") == true -> "Daten nicht gefunden. Bitte versuchen Sie es später erneut."
                     e.message?.contains("500") == true -> "Serverfehler. Bitte versuchen Sie es später erneut."
                     e.message?.contains("403") == true -> "Zugriff verweigert. Bitte versuchen Sie es später erneut."
-                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message ?: "Unbekannter Fehler"}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: "+(e.message ?: "Unbekannter Fehler")
                 }
                 _uiState.value = UiState.Error(errorMessage)
             }
         }
     }
 
+    private fun fetchProducts() {
+        viewModelScope.launch {
+            _productLoading.value = true
+            try {
+                val products = repository.getAllProducts()
+                _allProducts.value = products
+                filterProducts()
+                _uiState.value = UiState.Success(products, _categories.value)
+            } catch (e: Exception) {
+                _productError.value = e.message
+                _uiState.value = UiState.Error("Fehler beim Laden der Produkte: ${e.message}")
+            } finally {
+                _productLoading.value = false
+            }
+        }
+    }
+
     fun updateQuery(query: String) {
         _searchQuery.value = query
-        scheduleFilter()
+        filterProducts()
     }
 
     fun selectCategory(category: Category?) {
         _selectedCategory.value = category
-        scheduleFilter()
+        filterProducts()
     }
 
-    private fun scheduleFilter() {
-        filterJob?.cancel()
-        filterJob = viewModelScope.launch {
-            delay(300)
-            val query = _searchQuery.value
-            val category = _selectedCategory.value
-            val filtered = _allProducts.value.filter { product ->
-                val matchesQuery = product.title.contains(query, ignoreCase = true)
-                val matchesCategory = category == null || product.category?.id == category.id
-                matchesQuery && matchesCategory
-            }
-            _filteredProducts.value = filtered
+    private fun filterProducts() {
+        val products = _allProducts.value
+        val query = _searchQuery.value
+        val category = _selectedCategory.value
+        val filtered = products.filter { product ->
+            val matchesQuery = product.title.contains(query, ignoreCase = true)
+            val matchesCategory = category == null || product.category?.id == category.id
+            matchesQuery && matchesCategory
         }
+        _filteredProducts.value = filtered
     }
 
-    fun getProductById(id: Int): Product? {
-        return _allProducts.value.find { it.id == id }
+    suspend fun getProductById(id: Int): Product? {
+        return repository.getAllProducts().find { it.id == id }
     }
 
     fun loadProductById(id: Int) {
@@ -144,6 +144,6 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
     }
 
     fun retryFetchData() {
-        fetchData()
+        fetchCategories()
     }
 }

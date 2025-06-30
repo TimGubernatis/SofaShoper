@@ -7,7 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.components.ProductDetailContent
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel

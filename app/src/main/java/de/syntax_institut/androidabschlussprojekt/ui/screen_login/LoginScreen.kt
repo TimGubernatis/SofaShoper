@@ -64,7 +64,7 @@ fun LoginScreen(
                     authViewModel.signInWithGoogle(account.idToken ?: "")
                 }
             } catch (e: ApiException) {
-                // Google Sign-In Fehler wird bereits im AuthViewModel behandelt
+
             }
         }
     }

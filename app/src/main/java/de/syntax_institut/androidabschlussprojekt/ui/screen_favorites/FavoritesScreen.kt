@@ -13,8 +13,6 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.ProductCard
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 
 @Composable
 fun FavoritesScreen(
@@ -25,13 +23,12 @@ fun FavoritesScreen(
 ) {
     val user by authViewModel.user.collectAsState()
     val favorites by favoritesViewModel.favorites.collectAsState()
-    val allProducts by homeViewModel.filteredProducts.collectAsState()
+    val favoriteProducts by favoritesViewModel.favoriteProducts.collectAsState()
+    val allProducts by homeViewModel.allProducts.collectAsState()
     val cartItems by cartViewModel.cartItems.collectAsState()
 
-    val pagedFavorites = favoritesViewModel.pagedFavorites(allProducts = allProducts).collectAsLazyPagingItems()
-
-    LaunchedEffect(user?.id) {
-        user?.id?.let { favoritesViewModel.loadFavorites(it) }
+    LaunchedEffect(user?.id, allProducts) {
+        user?.id?.let { favoritesViewModel.loadFavorites(it, allProducts) }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -41,15 +38,13 @@ fun FavoritesScreen(
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(pagedFavorites) { product ->
-                    if (product != null) {
-                        ProductCard(
-                            product = product,
-                            onClick = {},
-                            onAddToCart = { cartViewModel.addToCart(product) },
-                            isInCart = cartViewModel.isInCart(product.id)
-                        )
-                    }
+                items(favoriteProducts) { product ->
+                    ProductCard(
+                        product = product,
+                        onClick = {},
+                        onAddToCart = { cartViewModel.addToCart(product) },
+                        isInCart = cartViewModel.isInCart(product.id)
+                    )
                 }
             }
         }

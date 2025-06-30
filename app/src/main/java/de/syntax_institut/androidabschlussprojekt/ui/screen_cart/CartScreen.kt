@@ -6,16 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import de.syntax_institut.androidabschlussprojekt.data.model.CartItem
-import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
-import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.CartItemCard
