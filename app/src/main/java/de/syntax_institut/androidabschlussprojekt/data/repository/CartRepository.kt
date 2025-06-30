@@ -27,7 +27,7 @@ class CartRepository {
             _cartItems.update { currentItems ->
                 val existingItem = currentItems.find { it.product.id == product.id }
                 if (existingItem != null) {
-                    // Update existing item
+
                     currentItems.map { item ->
                         if (item.product.id == product.id) {
                             item.updateQuantity(item.quantity + quantity)
@@ -36,7 +36,7 @@ class CartRepository {
                         }
                     }
                 } else {
-                    // Add new item
+
                     currentItems + CartItem(product, quantity)
                 }
             }

@@ -37,7 +37,7 @@ fun ProductCard(
 ) {
     val context: Context = LocalContext.current
     
-    // Animation für die Button-Farbe
+
     val buttonColor by animateColorAsState(
         targetValue = if (isInCart) 
             MaterialTheme.colorScheme.secondary 
@@ -73,7 +73,7 @@ fun ProductCard(
                     error = painterResource(R.drawable.ic_broken_image)
                 )
                 
-                // Overlay für Klick-Bereich
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -83,7 +83,7 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Produkttitel
+
             Text(
                 text = product.title,
                 style = MaterialTheme.typography.titleMedium,
@@ -93,13 +93,13 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Preis und Button in einer Row
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Preis mit schöner Formatierung
+
                 Column {
                     Text(
                         text = formatPrice(product.price),
@@ -116,7 +116,7 @@ fun ProductCard(
                     }
                 }
 
-                // Warenkorb Button mit Animation
+
                 FloatingActionButton(
                     onClick = onAddToCart,
                     modifier = Modifier.size(48.dp),

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ProfileScreen(
@@ -32,6 +33,12 @@ fun ProfileScreen(
     val user by userProfileViewModel.user.collectAsState()
     val isSigningOut by userProfileViewModel.authViewModel.isSigningOut.collectAsState()
     var userLoaded by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(false) }
+    val isSaving by userProfileViewModel.isSaving.collectAsState()
+    val errorMessage by userProfileViewModel.errorMessage.collectAsState()
+    val accountDeleted by userProfileViewModel.accountDeleted.collectAsState()
+    val context = LocalContext.current
+    val openDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
@@ -42,6 +49,34 @@ fun ProfileScreen(
                 popUpTo("profile") { inclusive = true }
             }
         }
+    }
+
+    if (accountDeleted) {
+        LaunchedEffect(Unit) {
+            navController.navigate("home") {
+                popUpTo("profile") { inclusive = true }
+            }
+        }
+    }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = { openDialog.value = false },
+            title = { Text("Account wirklich löschen?") },
+            text = { Text("Dein Account und alle Daten werden unwiderruflich gelöscht.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        openDialog.value = false
+                        userProfileViewModel.deleteUserAccount()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Ja, löschen") }
+            },
+            dismissButton = {
+                Button(onClick = { openDialog.value = false }) { Text("Abbrechen") }
+            }
+        )
     }
 
     if (user == null) {
@@ -56,231 +91,198 @@ fun ProfileScreen(
         return
     }
 
-    val isSaving by userProfileViewModel.isSaving.collectAsState()
-    val errorMessage by userProfileViewModel.errorMessage.collectAsState()
+    var firstName by remember { mutableStateOf(user?.firstName ?: "") }
+    var lastName by remember { mutableStateOf(user?.lastName ?: "") }
+    var email by remember { mutableStateOf(user?.email ?: "") }
+    var phone by remember { mutableStateOf(user?.phone ?: "") }
+    var mobile by remember { mutableStateOf(user?.mobile ?: "") }
 
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var mobile by remember { mutableStateOf("") }
+    var street by remember { mutableStateOf(user?.shippingAddress?.street ?: "") }
+    var houseNumber by remember { mutableStateOf(user?.shippingAddress?.houseNumber ?: "") }
+    var addressAddition by remember { mutableStateOf(user?.shippingAddress?.addressAddition ?: "") }
+    var postalCode by remember { mutableStateOf(user?.shippingAddress?.postalCode ?: "") }
+    var city by remember { mutableStateOf(user?.shippingAddress?.city ?: "") }
+    var country by remember { mutableStateOf(user?.shippingAddress?.country ?: "DE") }
 
-    var street by remember { mutableStateOf("") }
-    var houseNumber by remember { mutableStateOf("") }
-    var addressAddition by remember { mutableStateOf("") }
-    var postalCode by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("DE") }
+    var billingStreet by remember { mutableStateOf(user?.billingAddress?.street ?: "") }
+    var billingHouseNumber by remember { mutableStateOf(user?.billingAddress?.houseNumber ?: "") }
+    var billingAddressAddition by remember { mutableStateOf(user?.billingAddress?.addressAddition ?: "") }
+    var billingPostalCode by remember { mutableStateOf(user?.billingAddress?.postalCode ?: "") }
+    var billingCity by remember { mutableStateOf(user?.billingAddress?.city ?: "") }
+    var billingCountry by remember { mutableStateOf(user?.billingAddress?.country ?: "DE") }
 
-    var billingStreet by remember { mutableStateOf("") }
-    var billingHouseNumber by remember { mutableStateOf("") }
-    var billingAddressAddition by remember { mutableStateOf("") }
-    var billingPostalCode by remember { mutableStateOf("") }
-    var billingCity by remember { mutableStateOf("") }
-    var billingCountry by remember { mutableStateOf("DE") }
-
-    var paymentMethodType by remember { mutableStateOf("None") }
-    var paypalEmail by remember { mutableStateOf("") }
-    var ibanNumber by remember { mutableStateOf("") }
-
-    LaunchedEffect(user) {
-        user?.let {
-            firstName = it.firstName
-            lastName = it.lastName
-            email = it.email
-            phone = it.phone ?: ""
-            mobile = it.mobile ?: ""
-
-            street = it.shippingAddress.street
-            houseNumber = it.shippingAddress.houseNumber
-            addressAddition = it.shippingAddress.addressAddition ?: ""
-            postalCode = it.shippingAddress.postalCode
-            city = it.shippingAddress.city
-            country = it.shippingAddress.country
-
-            billingStreet = it.billingAddress.street
-            billingHouseNumber = it.billingAddress.houseNumber
-            billingAddressAddition = it.billingAddress.addressAddition ?: ""
-            billingPostalCode = it.billingAddress.postalCode
-            billingCity = it.billingAddress.city
-            billingCountry = it.billingAddress.country
-
-            val pm = it.paymentMethod
-            if (pm != null) {
-                paymentMethodType = pm.type
-                paypalEmail = pm.email
-                ibanNumber = pm.iban
-            } else {
-                paymentMethodType = "None"
-                paypalEmail = ""
-                ibanNumber = ""
-            }
-        }
-    }
+    var paymentMethodType by remember { mutableStateOf(user?.paymentMethod?.type ?: "None") }
+    var paypalEmail by remember { mutableStateOf(user?.paymentMethod?.email ?: "") }
+    var ibanNumber by remember { mutableStateOf(user?.paymentMethod?.iban ?: "") }
 
     val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(
-                WindowInsets.safeDrawing
-                    .only(WindowInsetsSides.Top + WindowInsetsSides.Bottom)
-                    .asPaddingValues()
-            )
+            .padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom).asPaddingValues())
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(start = 16.dp, end = 16.dp)
-                .padding(end = (LocalConfiguration.current.screenWidthDp * 0.1f).dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            UserInfoSection(
-                firstName = firstName,
-                onFirstNameChange = { firstName = it },
-                lastName = lastName,
-                onLastNameChange = { lastName = it },
-                email = email,
-                onEmailChange = { email = it },
-                phone = phone,
-                onPhoneChange = { phone = it },
-                mobile = mobile,
-                onMobileChange = { mobile = it }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Lieferadresse", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AddressFields(
-                street = street,
-                onStreetChange = { street = it },
-                houseNumber = houseNumber,
-                onHouseNumberChange = { houseNumber = it },
-                addressAddition = addressAddition,
-                onAddressAdditionChange = { addressAddition = it },
-                postalCode = postalCode,
-                onPostalCodeChange = { postalCode = it },
-                city = city,
-                onCityChange = { city = it },
-                country = country,
-                onCountryChange = { country = it }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AddressFields(
-                street = billingStreet,
-                onStreetChange = { billingStreet = it },
-                houseNumber = billingHouseNumber,
-                onHouseNumberChange = { billingHouseNumber = it },
-                addressAddition = billingAddressAddition,
-                onAddressAdditionChange = { billingAddressAddition = it },
-                postalCode = billingPostalCode,
-                onPostalCodeChange = { billingPostalCode = it },
-                city = billingCity,
-                onCityChange = { billingCity = it },
-                country = billingCountry,
-                onCountryChange = { billingCountry = it }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            PaymentMethodSelector(
-                selectedMethod = paymentMethodType,
-                onMethodSelected = { paymentMethodType = it },
-                paypalEmail = paypalEmail,
-                onPaypalEmailChange = { paypalEmail = it },
-                ibanNumber = ibanNumber,
-                onIbanNumberChange = { ibanNumber = it }
-            )
-
-            Spacer(modifier = Modifier.height(72.dp))
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-        ) {
-            if (!errorMessage.isNullOrEmpty()) {
-                Text(
-                    text = errorMessage ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Persönliche Daten", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isEditing) {
+                        OutlinedTextField(value = firstName, onValueChange = { firstName = it }, label = { Text("Vorname") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = lastName, onValueChange = { lastName = it }, label = { Text("Nachname") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("E-Mail") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Telefon") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = mobile, onValueChange = { mobile = it }, label = { Text("Mobil") }, modifier = Modifier.fillMaxWidth())
+                    } else {
+                        Text("Vorname: $firstName")
+                        Text("Nachname: $lastName")
+                        Text("E-Mail: $email")
+                        if (phone.isNotBlank()) Text("Telefon: $phone")
+                        if (mobile.isNotBlank()) Text("Mobil: $mobile")
+                    }
+                }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Lieferadresse", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isEditing) {
+                        OutlinedTextField(value = street, onValueChange = { street = it }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = houseNumber, onValueChange = { houseNumber = it }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = addressAddition, onValueChange = { addressAddition = it }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = postalCode, onValueChange = { postalCode = it }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = city, onValueChange = { city = it }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = country, onValueChange = { country = it }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
+                    } else {
+                        Text("Straße: $street")
+                        Text("Hausnummer: $houseNumber")
+                        if (addressAddition.isNotBlank()) Text("Adresszusatz: $addressAddition")
+                        Text("PLZ: $postalCode")
+                        Text("Stadt: $city")
+                        Text("Land: $country")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isEditing) {
+                        OutlinedTextField(value = billingStreet, onValueChange = { billingStreet = it }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = billingHouseNumber, onValueChange = { billingHouseNumber = it }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = billingAddressAddition, onValueChange = { billingAddressAddition = it }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = billingPostalCode, onValueChange = { billingPostalCode = it }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = billingCity, onValueChange = { billingCity = it }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = billingCountry, onValueChange = { billingCountry = it }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
+                    } else {
+                        Text("Straße: $billingStreet")
+                        Text("Hausnummer: $billingHouseNumber")
+                        if (billingAddressAddition.isNotBlank()) Text("Adresszusatz: $billingAddressAddition")
+                        Text("PLZ: $billingPostalCode")
+                        Text("Stadt: $billingCity")
+                        Text("Land: $billingCountry")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isEditing) {
+                        PaymentMethodSelector(
+                            selectedMethod = paymentMethodType,
+                            onMethodSelected = { paymentMethodType = it },
+                            paypalEmail = paypalEmail,
+                            onPaypalEmailChange = { paypalEmail = it },
+                            ibanNumber = ibanNumber,
+                            onIbanNumberChange = { ibanNumber = it }
+                        )
+                    } else {
+                        Text("Typ: $paymentMethodType")
+                        if (paymentMethodType == "PayPal") Text("PayPal: $paypalEmail")
+                        if (paymentMethodType == "IBAN") Text("IBAN: $ibanNumber")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(
-                    onClick = {
-                        userProfileViewModel.signOut()
-                    },
-                    modifier = Modifier.weight(1f),
-                    enabled = !isSigningOut
-                ) {
-                    Text(if (isSigningOut) "Logging out..." else "Logout")
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Button(
-                    onClick = {
-                        val shippingAddress = Address(
-                            street = street,
-                            houseNumber = houseNumber,
-                            addressAddition = if (addressAddition.isBlank()) null else addressAddition,
-                            postalCode = postalCode,
-                            city = city,
-                            country = country
-                        )
-                        val billingAddress = Address(
-                            street = billingStreet,
-                            houseNumber = billingHouseNumber,
-                            addressAddition = if (billingAddressAddition.isBlank()) null else billingAddressAddition,
-                            postalCode = billingPostalCode,
-                            city = billingCity,
-                            country = billingCountry
-                        )
-                        val paymentMethod = when (paymentMethodType) {
-                            "PayPal" -> PaymentMethod.paypal(email = paypalEmail)
-                            "IBAN" -> PaymentMethod.iban(iban = ibanNumber)
-                            else -> PaymentMethod.none()
-                        }
-                        user?.let {
-                            val updatedUser = it.copy(
+                if (!isEditing) {
+                    Button(onClick = { isEditing = true }, modifier = Modifier.weight(1f)) {
+                        Text("Bearbeiten")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = { openDialog.value = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Account löschen")
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            val updatedUser = user!!.copy(
                                 firstName = firstName,
                                 lastName = lastName,
                                 email = email,
                                 phone = phone.takeIf { it.isNotBlank() },
                                 mobile = mobile.takeIf { it.isNotBlank() },
-                                shippingAddress = shippingAddress,
-                                billingAddress = billingAddress,
-                                paymentMethod = paymentMethod
+                                shippingAddress = Address(
+                                    street = street,
+                                    houseNumber = houseNumber,
+                                    addressAddition = addressAddition.takeIf { it.isNotBlank() },
+                                    postalCode = postalCode,
+                                    city = city,
+                                    country = country
+                                ),
+                                billingAddress = Address(
+                                    street = billingStreet,
+                                    houseNumber = billingHouseNumber,
+                                    addressAddition = billingAddressAddition.takeIf { it.isNotBlank() },
+                                    postalCode = billingPostalCode,
+                                    city = billingCity,
+                                    country = billingCountry
+                                ),
+                                paymentMethod = when (paymentMethodType) {
+                                    "PayPal" -> PaymentMethod.paypal(email = paypalEmail)
+                                    "IBAN" -> PaymentMethod.iban(iban = ibanNumber)
+                                    else -> PaymentMethod.none()
+                                }
                             )
                             userProfileViewModel.updateUser(updatedUser)
-                        }
-                    },
-                    enabled = !isSaving,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(if (isSaving) "Speichern..." else "Speichern")
+                            isEditing = false
+                        },
+                        enabled = !isSaving,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Speichern")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { isEditing = false }, modifier = Modifier.weight(1f)) {
+                        Text("Abbrechen")
+                    }
                 }
+            }
+            if (errorMessage != null) {
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
         }
     }

@@ -20,6 +20,9 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +40,8 @@ fun HomeScreen(
     val itemCount by cartViewModel.itemCount.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
 
+    val pagedProducts = homeViewModel.pagedProducts.collectAsLazyPagingItems()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -46,12 +51,12 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    // Search Icon
+
                     IconButton(onClick = { isSearching = !isSearching }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                     
-                    // Andere Icons nur anzeigen wenn nicht am Suchen
+
                     if (!isSearching) {
                         IconButton(onClick = onProfileClick) {
                             Icon(Icons.Default.Person, contentDescription = "Profile")
@@ -64,7 +69,7 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            // Floating Action Button für Warenkorb
+
             FloatingActionButton(
                 onClick = onCartClick,
                 containerColor = MaterialTheme.colorScheme.primary
@@ -90,7 +95,7 @@ fun HomeScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Suchleiste nur anzeigen wenn aktiviert
+
             if (isSearching) {
                 CollapsibleSearchBar(
                     query = searchQuery,
@@ -120,29 +125,25 @@ fun HomeScreen(
 
                 is UiState.Success -> {
                     val categories = state.categories
-                    val products by homeViewModel.filteredProducts.collectAsState()
-
                     CategoryRow(
                         categories = categories,
                         selectedCategory = selectedCategory,
                         onCategoryClick = { homeViewModel.selectCategory(it) }
                     )
-
                     DealOfTheDayBanner()
-
                     LazyColumn(
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(products, key = { it.id }) { product ->
-                            ProductCard(
-                                product = product,
-                                onClick = { onProductClick(product.id) },
-                                onAddToCart = { 
-                                    cartViewModel.addToCart(product)
-                                },
-                                isInCart = cartViewModel.isInCart(product.id)
-                            )
+                        items(pagedProducts) { product ->
+                            if (product != null) {
+                                ProductCard(
+                                    product = product,
+                                    onClick = { onProductClick(product.id) },
+                                    onAddToCart = { cartViewModel.addToCart(product) },
+                                    isInCart = cartViewModel.isInCart(product.id)
+                                )
+                            }
                         }
                     }
                 }

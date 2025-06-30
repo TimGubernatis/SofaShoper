@@ -92,4 +92,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
+
+    // Paging Compose
+    implementation("androidx.paging:paging-compose:3.2.0")
 }

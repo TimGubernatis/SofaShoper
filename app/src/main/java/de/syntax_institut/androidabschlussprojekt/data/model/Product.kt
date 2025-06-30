@@ -11,3 +11,8 @@ data class Product(
     val creationAt: String,
     val updatedAt: String
 )
+
+data class Favorite(
+    val productId: Int = 0,
+    val addedAt: Long = System.currentTimeMillis()
+)

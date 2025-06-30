@@ -13,12 +13,13 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.SettingsViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CheckoutViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.ObserveCurrentUserUseCase
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.SignOutUseCase
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases.SignInWithGoogleUseCase
 import okhttp3.OkHttpClient
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -56,10 +57,11 @@ val appModule = module {
     singleOf(::SignOutUseCase)
     singleOf(::ObserveCurrentUserUseCase)
 
-    viewModel { AuthViewModel(get(), get(), get(), get()) }
-    viewModel { UserProfileViewModel(get(), get()) }
-    viewModel { HomeViewModel(get()) }
-    viewModel { SettingsViewModel(get(), get()) }
-    viewModel { CartViewModel(get()) }
-    viewModel { CheckoutViewModel(get()) }
+    viewModelOf(::AuthViewModel)
+    viewModelOf(::UserProfileViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::SettingsViewModel)
+    viewModelOf(::CartViewModel)
+    viewModelOf(::CheckoutViewModel)
+    viewModelOf(::FavoritesViewModel)
 }

@@ -1,18 +1,57 @@
 package de.syntax_institut.androidabschlussprojekt.ui.screen_favorites
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.koin.androidx.compose.koinViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
+import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.ProductCard
+import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 
 @Composable
-fun FavoritesScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Favoritenliste (später mit Firebase)")
+fun FavoritesScreen(
+    authViewModel: AuthViewModel = koinViewModel(),
+    favoritesViewModel: FavoritesViewModel = koinViewModel(),
+    homeViewModel: HomeViewModel = koinViewModel(),
+    cartViewModel: CartViewModel = koinViewModel()
+) {
+    val user by authViewModel.user.collectAsState()
+    val favorites by favoritesViewModel.favorites.collectAsState()
+    val allProducts by homeViewModel.filteredProducts.collectAsState()
+    val cartItems by cartViewModel.cartItems.collectAsState()
+
+    val pagedFavorites = favoritesViewModel.pagedFavorites(allProducts = allProducts).collectAsLazyPagingItems()
+
+    LaunchedEffect(user?.id) {
+        user?.id?.let { favoritesViewModel.loadFavorites(it) }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (favorites.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Keine Favoriten vorhanden")
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(pagedFavorites) { product ->
+                    if (product != null) {
+                        ProductCard(
+                            product = product,
+                            onClick = {},
+                            onAddToCart = { cartViewModel.addToCart(product) },
+                            isInCart = cartViewModel.isInCart(product.id)
+                        )
+                    }
+                }
+            }
+        }
     }
 }

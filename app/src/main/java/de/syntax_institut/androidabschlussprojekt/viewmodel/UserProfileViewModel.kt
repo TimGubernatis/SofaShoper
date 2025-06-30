@@ -7,6 +7,7 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.Use
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 class UserProfileViewModel(
     val authViewModel: AuthViewModel,
@@ -21,6 +22,9 @@ class UserProfileViewModel(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _accountDeleted = MutableStateFlow(false)
+    val accountDeleted: StateFlow<Boolean> = _accountDeleted
 
     init {
         viewModelScope.launch {
@@ -53,5 +57,20 @@ class UserProfileViewModel(
     fun signOut() {
         println("UserProfileViewModel: signOut aufgerufen")
         authViewModel.signOut()
+    }
+
+    fun deleteUserAccount() {
+        viewModelScope.launch {
+            val userId = user.value?.id ?: return@launch
+            try {
+                userRepository.deleteUserCompletely(userId)
+                val firebaseUser = FirebaseAuth.getInstance().currentUser
+                firebaseUser?.delete()?.addOnCompleteListener { task ->
+                    _accountDeleted.value = task.isSuccessful
+                }
+            } catch (e: Exception) {
+                _accountDeleted.value = false
+            }
+        }
     }
 }

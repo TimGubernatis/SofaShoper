@@ -12,6 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import java.net.SocketTimeoutException
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import kotlinx.coroutines.flow.Flow
 
 class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
@@ -41,6 +46,12 @@ class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
 
     private val _productError = MutableStateFlow<String?>(null)
     val productError: StateFlow<String?> = _productError
+
+    val pagedProducts: Flow<PagingData<Product>> = Pager(
+        PagingConfig(pageSize = 20)
+    ) {
+        repository.getProductPagingSource()
+    }.flow.cachedIn(viewModelScope)
 
     init {
         fetchData()
