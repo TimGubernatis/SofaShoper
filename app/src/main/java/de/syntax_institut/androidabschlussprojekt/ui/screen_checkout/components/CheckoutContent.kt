@@ -21,9 +21,8 @@ import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
-import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.AddressSection
-import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.PaymentMethodSection
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
+import androidx.compose.material3.HorizontalDivider
 
 @Composable
 fun CheckoutContent(
@@ -85,7 +84,7 @@ fun CheckoutContent(
                     }
                 }
                 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

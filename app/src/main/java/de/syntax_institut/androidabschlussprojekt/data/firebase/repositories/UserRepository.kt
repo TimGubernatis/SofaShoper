@@ -64,12 +64,12 @@ class UserRepository {
 
     suspend fun deleteUserCompletely(userId: String) {
         val userDoc = collection.document(userId)
-        // Favoriten-Subcollection löschen
+
         val favorites = userDoc.collection("favorites").get().await()
         for (fav in favorites.documents) {
             fav.reference.delete().await()
         }
-        // Weitere Subcollections können hier ergänzt werden
+
         userDoc.delete().await()
     }
 }

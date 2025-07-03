@@ -7,12 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.*
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressFields
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.PaymentMethodSelector
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.UserInfoSection
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.WindowInsets

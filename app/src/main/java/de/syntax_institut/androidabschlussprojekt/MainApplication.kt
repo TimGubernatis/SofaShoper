@@ -12,7 +12,7 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
-        // Firebase initialisieren
+
         try {
             FirebaseApp.initializeApp(this)
             Log.d("MainApplication", "Firebase erfolgreich initialisiert")
