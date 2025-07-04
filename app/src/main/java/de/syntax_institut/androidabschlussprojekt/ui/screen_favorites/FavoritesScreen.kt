@@ -25,7 +25,7 @@ fun FavoritesScreen(
     val favorites by favoritesViewModel.favorites.collectAsState()
     val favoriteProducts by favoritesViewModel.favoriteProducts.collectAsState()
     val allProducts by homeViewModel.allProducts.collectAsState()
-    val cartItems by cartViewModel.cartItems.collectAsState()
+    //val cartItems by cartViewModel.cartItems.collectAsState()
 
     LaunchedEffect(user?.id, allProducts) {
         user?.id?.let { favoritesViewModel.loadFavorites(it, allProducts) }
