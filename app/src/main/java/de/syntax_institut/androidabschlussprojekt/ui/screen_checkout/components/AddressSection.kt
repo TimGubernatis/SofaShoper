@@ -17,14 +17,15 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
 @Composable
 fun AddressSection(
     address: ShippingAddress,
-    onAddressChange: (ShippingAddress) -> Unit
+    onAddressChange: (ShippingAddress) -> Unit,
+    title: String = "Lieferadresse"
 ) {
     Card {
         Column(
             modifier = Modifier.padding(responsiveCardPadding())
         ) {
             Text(
-                text = "Lieferadresse",
+                text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

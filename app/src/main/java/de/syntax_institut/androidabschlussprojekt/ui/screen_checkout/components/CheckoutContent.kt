@@ -121,8 +121,17 @@ fun CheckoutContent(
 
         AddressSection(
             address = shippingAddress,
-            onAddressChange = onAddressChange
+            onAddressChange = onAddressChange,
+            title = "Lieferadresse"
         )
+        
+        if (useBillingAddress) {
+            AddressSection(
+                address = billingAddress ?: ShippingAddress("", "", "", "", ""),
+                onAddressChange = onBillingAddressChange,
+                title = "Rechnungsadresse"
+            )
+        }
         
 
         PaymentMethodSection(
@@ -187,13 +196,7 @@ fun CheckoutContent(
                 checked = useBillingAddress,
                 onCheckedChange = onUseBillingAddressChange
             )
-            Text("Andere Rechnungsadresse")
-        }
-        if (useBillingAddress) {
-            AddressSection(
-                address = billingAddress ?: ShippingAddress("", "", "", "", ""),
-                onAddressChange = onBillingAddressChange
-            )
+            Text("Abweichende Rechnungsadresse")
         }
 
         PrimaryButton(

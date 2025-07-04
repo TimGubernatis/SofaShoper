@@ -39,6 +39,16 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveIconSize
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveCardMaxWidth
 import de.syntax_institut.androidabschlussprojekt.util.responsiveIconButtonSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.scale
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDefaults
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun ProductCard(
@@ -48,7 +58,10 @@ fun ProductCard(
     isInCart: Boolean = false,
     isFavorite: Boolean = false,
     onFavoriteClick: (() -> Unit)? = null,
-    onLoginRequired: (() -> Unit)? = null
+    onLoginRequired: (() -> Unit)? = null,
+    cartTotal: Double = 0.0,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
 ) {
     val context: Context = LocalContext.current
     val buttonColor by animateColorAsState(
@@ -60,6 +73,8 @@ fun ProductCard(
         label = "buttonColor"
     )
     var showLoginDialog by remember { mutableStateOf(false) }
+    var animateAdd by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(targetValue = if (animateAdd) 1.08f else 1f, label = "addToCartScale")
     Box {
         Card(
             modifier = Modifier
@@ -144,16 +159,39 @@ fun ProductCard(
                     }
 
 
-                    FloatingActionButton(
-                        onClick = onAddToCart,
-                        modifier = Modifier.size(responsiveIconSize()),
-                        containerColor = buttonColor
+                    Button(
+                        onClick = {
+                            animateAdd = true
+                            onAddToCart()
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Produkt zum Warenkorb hinzugefügt\nWarenkorb: ${formatPrice(cartTotal + product.price)}",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .scale(scale)
+                            .height(responsiveButtonHeight()),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
                         Icon(
-                            imageVector = if (isInCart) Icons.Default.ShoppingCart else Icons.Default.AddShoppingCart,
-                            contentDescription = if (isInCart) "Im Warenkorb" else "In Warenkorb hinzufügen",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            imageVector = Icons.Default.AddShoppingCart,
+                            contentDescription = "In den Warenkorb",
+                            modifier = Modifier.size(responsiveIconSize())
                         )
+
+                    }
+                    LaunchedEffect(animateAdd) {
+                        if (animateAdd) {
+                            kotlinx.coroutines.delay(180)
+                            animateAdd = false
+                        }
                     }
                 }
             }
@@ -177,6 +215,33 @@ fun ProductCard(
                     }
                 }
             )
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    shape = RoundedCornerShape(16.dp),
+                    action = {
+                        TextButton(onClick = { data.dismiss() }) {
+                            Text("Schließen")
+                        }
+                    }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("Produkt zum Warenkorb hinzugefügt", style = MaterialTheme.typography.bodyMedium)
+                            Text("Warenkorb: ${formatPrice(cartTotal + product.price)}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
         }
     }
 }
