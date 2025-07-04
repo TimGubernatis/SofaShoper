@@ -15,6 +15,10 @@ import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.CartItemCard
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.CartSummary
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.EmptyCart
+import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
+import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,11 +60,12 @@ fun CartScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .padding(horizontal = responsivePadding())
             ) {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(responsivePadding()),
+                    verticalArrangement = Arrangement.spacedBy(responsiveSpacing())
                 ) {
                     items(cartItems, key = { it.product.id }) { cartItem ->
                         CartItemCard(

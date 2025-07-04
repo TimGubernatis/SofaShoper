@@ -24,6 +24,11 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
+import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
+import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,6 +101,7 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .padding(horizontal = responsivePadding())
         ) {
             if (isSearching) {
                 CollapsibleSearchBar(
@@ -133,8 +139,8 @@ fun HomeScreen(
                     )
                     DealOfTheDayBanner()
                     LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        contentPadding = PaddingValues(horizontal = responsivePadding(), vertical = responsiveTextFieldSpacing()),
+                        verticalArrangement = Arrangement.spacedBy(responsiveSpacing())
                     ) {
                         items(filteredProducts, key = { it.id }) { product ->
                             val currentUser = user

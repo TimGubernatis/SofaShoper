@@ -19,10 +19,17 @@ import de.syntax_institut.androidabschlussprojekt.data.model.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.model.ShippingAddress
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
+import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
 import androidx.compose.material3.HorizontalDivider
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 
 @Composable
 fun CheckoutContent(
@@ -56,13 +63,15 @@ fun CheckoutContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(responsivePadding())
+            .widthIn(max = responsiveMaxWidth()),
+        verticalArrangement = Arrangement.spacedBy(responsiveSpacing()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Card {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(responsiveCardPadding())
             ) {
                 Text(
                     text = "Bestellübersicht",
@@ -70,7 +79,7 @@ fun CheckoutContent(
                     fontWeight = FontWeight.Bold
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
                 
                 cartItems.forEach { cartItem ->
                     Row(
@@ -88,7 +97,7 @@ fun CheckoutContent(
                     }
                 }
                 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = responsiveTextFieldSpacing()))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -190,7 +199,9 @@ fun CheckoutContent(
         PrimaryButton(
             text = "Bestellung aufgeben",
             onClick = onPlaceOrder,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(responsiveButtonHeight()),
             enabled = selectedPaymentMethod != null && 
                      shippingAddress.firstName.isNotBlank() &&
                      shippingAddress.lastName.isNotBlank() &&

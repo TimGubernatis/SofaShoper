@@ -10,6 +10,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Payment
 import de.syntax_institut.androidabschlussprojekt.data.model.PaymentMethod
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 
 @Composable
 fun PaymentMethodSection(
@@ -18,7 +21,7 @@ fun PaymentMethodSection(
 ) {
     Card {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(responsiveCardPadding())
         ) {
             Text(
                 text = "Zahlungsmethode",
@@ -26,13 +29,13 @@ fun PaymentMethodSection(
                 fontWeight = FontWeight.Bold
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(responsiveSpacing()))
             
             PaymentMethod.values().forEach { method ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = responsiveTextFieldSpacing()),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
@@ -40,7 +43,7 @@ fun PaymentMethodSection(
                         onClick = { onMethodSelect(method) }
                     )
                     
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(responsiveTextFieldSpacing()))
                     
                     Icon(
                         imageVector = Icons.Default.Payment,
@@ -48,7 +51,7 @@ fun PaymentMethodSection(
                         modifier = Modifier.size(20.dp)
                     )
                     
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(responsiveTextFieldSpacing()))
                     
                     Text(
                         text = when (method) {

@@ -5,8 +5,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.model.ShippingAddress
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
 
 @Composable
 fun AddressSection(
@@ -15,7 +21,7 @@ fun AddressSection(
 ) {
     Card {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(responsiveCardPadding())
         ) {
             Text(
                 text = "Lieferadresse",
@@ -23,10 +29,10 @@ fun AddressSection(
                 fontWeight = FontWeight.Bold
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(responsiveSpacing()))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
             ) {
                 OutlinedTextField(
                     value = address.firstName,
@@ -42,26 +48,32 @@ fun AddressSection(
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
             ) {
                 OutlinedTextField(
                     value = address.street,
                     onValueChange = { onAddressChange(address.copy(street = it)) },
                     label = { Text("Straße") },
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier.weight(2f),
+                    textStyle = LocalTextStyle.current.copy(fontSize = responsiveSmallTextSize())
                 )
                 OutlinedTextField(
                     value = address.houseNumber ?: "",
                     onValueChange = { onAddressChange(address.copy(houseNumber = it)) },
-                    label = { Text("Hausnummer") },
-                    modifier = Modifier.weight(1f)
+                    label = { Text(
+                        "Hausnummer",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    ) },
+                    modifier = Modifier.weight(1f),
+                    textStyle = LocalTextStyle.current.copy(fontSize = responsiveSmallTextSize())
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
             
             OutlinedTextField(
                 value = address.addressAddition ?: "",
@@ -70,10 +82,10 @@ fun AddressSection(
                 modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
             ) {
                 OutlinedTextField(
                     value = address.postalCode,
@@ -89,7 +101,7 @@ fun AddressSection(
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
             
             OutlinedTextField(
                 value = address.phone ?: "",

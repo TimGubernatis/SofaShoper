@@ -26,8 +26,19 @@ import coil3.request.crossfade
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.data.model.Product
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveImageHeight
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCornerRadius
+import de.syntax_institut.androidabschlussprojekt.util.responsiveElevation
+import de.syntax_institut.androidabschlussprojekt.util.responsiveIconSize
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveCardMaxWidth
+import de.syntax_institut.androidabschlussprojekt.util.responsiveIconButtonSize
 
 @Composable
 fun ProductCard(
@@ -53,15 +64,16 @@ fun ProductCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(6.dp)
+                .widthIn(max = responsiveCardMaxWidth())
+                .padding(horizontal = responsivePadding(), vertical = responsiveTextFieldSpacing()),
+            shape = RoundedCornerShape(responsiveCornerRadius()),
+            elevation = CardDefaults.cardElevation(responsiveElevation())
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(responsiveCardPadding())) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(responsiveImageHeight()),
                     contentAlignment = Alignment.TopEnd
                 ) {
                     AsyncImage(
@@ -83,17 +95,20 @@ fun ProductCard(
                                 showLoginDialog = true
                             }
                         },
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(responsiveIconButtonSize())
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = if (isFavorite) "Favorit" else "Als Favorit markieren",
-                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(responsiveIconSize())
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(responsiveSpacing()))
 
 
                 Text(
@@ -103,7 +118,7 @@ fun ProductCard(
                     modifier = Modifier.clickable(onClick = onClick)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
 
 
                 Row(
@@ -131,7 +146,7 @@ fun ProductCard(
 
                     FloatingActionButton(
                         onClick = onAddToCart,
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(responsiveIconSize()),
                         containerColor = buttonColor
                     ) {
                         Icon(

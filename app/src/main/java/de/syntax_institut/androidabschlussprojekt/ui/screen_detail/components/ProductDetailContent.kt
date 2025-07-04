@@ -13,10 +13,17 @@ import de.syntax_institut.androidabschlussprojekt.data.model.Product
 import de.syntax_institut.androidabschlussprojekt.ui.components.ImageCarousel
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
+import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
+import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
+import de.syntax_institut.androidabschlussprojekt.util.responsiveImageHeight
+import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
+import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
+import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,17 +40,18 @@ fun ProductDetailContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(horizontal = responsivePadding())
+            .verticalScroll(rememberScrollState())
+            .widthIn(max = responsiveMaxWidth()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(responsiveSpacing()))
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
             ImageCarousel(
                 imageUrls = product.images,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
+                    .height(responsiveImageHeight())
             )
             IconButton(
                 onClick = {
@@ -83,7 +91,7 @@ fun ProductDetailContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(responsiveSpacing()))
 
         Text(
             text = product.title,
@@ -91,7 +99,7 @@ fun ProductDetailContent(
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
 
         product.category?.name?.let {
             Card(
@@ -107,7 +115,7 @@ fun ProductDetailContent(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
         }
 
         Text(
@@ -116,7 +124,7 @@ fun ProductDetailContent(
             color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(responsiveSpacing()))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -132,7 +140,7 @@ fun ProductDetailContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(responsiveSpacing() * 2))
 
         if (isInCart) {
             Card(
@@ -155,10 +163,10 @@ fun ProductDetailContent(
                 onClick = onAddToCart,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(responsiveButtonHeight())
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(responsiveSpacing()))
     }
 }
