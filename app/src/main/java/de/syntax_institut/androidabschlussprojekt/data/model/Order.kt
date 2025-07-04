@@ -31,7 +31,9 @@ data class ShippingAddress(
     val city: String,
     val postalCode: String,
     val country: String = "Deutschland",
-    val phone: String? = null
+    val phone: String? = null,
+    val houseNumber: String? = null,
+    val addressAddition: String? = null
 )
 
 enum class PaymentMethod {

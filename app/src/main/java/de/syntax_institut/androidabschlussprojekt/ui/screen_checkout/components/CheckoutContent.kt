@@ -46,7 +46,11 @@ fun CheckoutContent(
     onPasswordVisibleChange: (Boolean) -> Unit,
     user: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User?,
     onGoogleSignIn: () -> Unit,
-    onForgotPassword: () -> Unit
+    onForgotPassword: () -> Unit,
+    useBillingAddress: Boolean,
+    onUseBillingAddressChange: (Boolean) -> Unit,
+    billingAddress: ShippingAddress?,
+    onBillingAddressChange: (ShippingAddress) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -169,6 +173,19 @@ fun CheckoutContent(
             }
         }
 
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = useBillingAddress,
+                onCheckedChange = onUseBillingAddressChange
+            )
+            Text("Andere Rechnungsadresse")
+        }
+        if (useBillingAddress) {
+            AddressSection(
+                address = billingAddress ?: ShippingAddress("", "", "", "", ""),
+                onAddressChange = onBillingAddressChange
+            )
+        }
 
         PrimaryButton(
             text = "Bestellung aufgeben",

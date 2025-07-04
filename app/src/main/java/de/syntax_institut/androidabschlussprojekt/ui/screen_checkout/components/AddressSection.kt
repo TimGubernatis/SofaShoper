@@ -44,10 +44,29 @@ fun AddressSection(
             
             Spacer(modifier = Modifier.height(8.dp))
             
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = address.street,
+                    onValueChange = { onAddressChange(address.copy(street = it)) },
+                    label = { Text("Straße") },
+                    modifier = Modifier.weight(2f)
+                )
+                OutlinedTextField(
+                    value = address.houseNumber ?: "",
+                    onValueChange = { onAddressChange(address.copy(houseNumber = it)) },
+                    label = { Text("Hausnummer") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
             OutlinedTextField(
-                value = address.street,
-                onValueChange = { onAddressChange(address.copy(street = it)) },
-                label = { Text("Straße & Hausnummer") },
+                value = address.addressAddition ?: "",
+                onValueChange = { onAddressChange(address.copy(addressAddition = it)) },
+                label = { Text("Adresszusatz") },
                 modifier = Modifier.fillMaxWidth()
             )
             

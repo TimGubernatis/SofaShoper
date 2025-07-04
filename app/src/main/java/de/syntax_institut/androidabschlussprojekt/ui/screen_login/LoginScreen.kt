@@ -4,9 +4,14 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -19,6 +24,11 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.Ema
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.ErrorMessageLogin
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun LoginScreen(
@@ -29,6 +39,10 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isRegisterMode by remember { mutableStateOf(false) }
+    var passwordRepeat by remember { mutableStateOf("") }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var passwordRepeatVisible by remember { mutableStateOf(false) }
 
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
@@ -89,15 +103,48 @@ fun LoginScreen(
                 if (errorMessage != null) {
                     authViewModel.clearError()
                 }
-            }
+            },
+            passwordVisible = passwordVisible,
+            onPasswordVisibleChange = { passwordVisible = it }
         )
+        if (isRegisterMode) {
+            Spacer(Modifier.height(8.dp))
+            TextField(
+                value = passwordRepeat,
+                onValueChange = { passwordRepeat = it },
+                label = { Text("Passwort wiederholen") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (passwordRepeatVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passwordRepeatVisible = !passwordRepeatVisible }) {
+                        Icon(
+                            imageVector = if (passwordRepeatVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription = if (passwordRepeatVisible) "Verbergen" else "Anzeigen"
+                        )
+                    }
+                }
+            )
+        }
+        if (showPasswordDialog) {
+            Text(
+                text = "Die Passwörter stimmen nicht überein!",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
         Spacer(Modifier.height(16.dp))
-
         AuthButtons(
             isRegisterMode = isRegisterMode,
             onToggleMode = { isRegisterMode = !isRegisterMode },
             onLogin = { authViewModel.signIn(email, password) },
-            onRegister = { authViewModel.register(email, password) },
+            onRegister = {
+                if (password != passwordRepeat) {
+                    showPasswordDialog = true
+                } else {
+                    showPasswordDialog = false
+                    authViewModel.register(email, password)
+                }
+            },
             isLoading = isLoading
         )
         Spacer(Modifier.height(8.dp))

@@ -23,6 +23,7 @@ import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
+import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +34,8 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit,
     onFavoritesClick: () -> Unit,
-    authViewModel: AuthViewModel = koinViewModel()
+    authViewModel: AuthViewModel = koinViewModel(),
+    favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     val selectedCategory by homeViewModel.selectedCategory.collectAsState()
@@ -43,6 +45,14 @@ fun HomeScreen(
 
     val filteredProducts by homeViewModel.filteredProducts.collectAsState()
     val user by authViewModel.user.collectAsState()
+    val favorites by favoritesViewModel.favorites.collectAsState()
+    val allProducts by homeViewModel.allProducts.collectAsState()
+
+    LaunchedEffect(user?.id, allProducts) {
+        user?.id?.let { userId ->
+            favoritesViewModel.loadFavorites(userId, allProducts)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -127,11 +137,25 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(filteredProducts, key = { it.id }) { product ->
+                            val currentUser = user
                             ProductCard(
                                 product = product,
                                 onClick = { onProductClick(product.id) },
                                 onAddToCart = { cartViewModel.addToCart(product) },
-                                isInCart = cartViewModel.isInCart(product.id)
+                                isInCart = cartViewModel.isInCart(product.id),
+                                isFavorite = currentUser?.id != null && favorites.contains(product.id),
+                                onFavoriteClick = currentUser?.id?.let { userId ->
+                                    {
+                                        if (favorites.contains(product.id)) {
+                                            favoritesViewModel.removeFavorite(userId, product.id, allProducts)
+                                        } else {
+                                            favoritesViewModel.addFavorite(userId, product.id, allProducts)
+                                        }
+                                    }
+                                },
+                                onLoginRequired = if (currentUser?.id == null) {
+                                    { onProfileClick() }
+                                } else null
                             )
                         }
                     }

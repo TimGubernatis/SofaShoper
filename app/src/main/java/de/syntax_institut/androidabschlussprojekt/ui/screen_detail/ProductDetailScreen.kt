@@ -11,6 +11,8 @@ import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.components.ProductDetailContent
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,12 +21,22 @@ fun ProductDetailScreen(
     productId: Int,
     homeViewModel: HomeViewModel = koinViewModel(),
     cartViewModel: CartViewModel = koinViewModel(),
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    authViewModel: AuthViewModel = koinViewModel(),
+    favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
     val product by homeViewModel.selectedProduct.collectAsState()
     val isLoading by homeViewModel.productLoading.collectAsState()
     val error by homeViewModel.productError.collectAsState()
     val isInCart by remember { derivedStateOf { cartViewModel.isInCart(productId) } }
+    val user by authViewModel.user.collectAsState()
+    val allProducts by homeViewModel.allProducts.collectAsState()
+    val favorites by favoritesViewModel.favorites.collectAsState()
+    LaunchedEffect(user?.id, allProducts) {
+        user?.id?.let { userId ->
+            favoritesViewModel.loadFavorites(userId, allProducts)
+        }
+    }
 
     LaunchedEffect(productId) {
         homeViewModel.loadProductById(productId)
@@ -68,12 +80,26 @@ fun ProductDetailScreen(
                 }
                 
                 product != null -> {
+                    val currentUser = user
                     ProductDetailContent(
                         product = product!!,
                         isInCart = isInCart,
                         onAddToCart = {
                             product?.let { cartViewModel.addToCart(it) }
-                        }
+                        },
+                        isFavorite = currentUser?.id != null && favorites.contains(productId),
+                        onFavoriteClick = currentUser?.id?.let { userId ->
+                            {
+                                if (favorites.contains(productId)) {
+                                    favoritesViewModel.removeFavorite(userId, productId, allProducts)
+                                } else {
+                                    favoritesViewModel.addFavorite(userId, productId, allProducts)
+                                }
+                            }
+                        },
+                        onLoginRequired = if (currentUser?.id == null) {
+                            { onBackClick() }
+                        } else null
                     )
                 }
                 

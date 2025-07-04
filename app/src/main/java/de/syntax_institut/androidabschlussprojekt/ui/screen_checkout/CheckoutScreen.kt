@@ -46,11 +46,13 @@ fun CheckoutScreen(
     val cartTotal by checkoutViewModel.cartTotal.collectAsState()
     val shippingAddress by checkoutViewModel.shippingAddress.collectAsState()
     val selectedPaymentMethod by checkoutViewModel.selectedPaymentMethod.collectAsState()
+    val billingAddress by checkoutViewModel.billingAddress.collectAsState()
     var email by remember { mutableStateOf("") }
     var createAccount by remember { mutableStateOf(false) }
     var password by remember { mutableStateOf("") }
     var passwordRepeat by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var useBillingAddress by remember { mutableStateOf(false) }
     val user by authViewModel.user.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -80,6 +82,14 @@ fun CheckoutScreen(
     LaunchedEffect(checkoutState) {
         if (checkoutState is CheckoutState.Success) {
             onOrderSuccess()
+        }
+    }
+
+
+    LaunchedEffect(user) {
+        user?.let {
+            checkoutViewModel.prefillFromUser(it)
+            email = it.email
         }
     }
 
@@ -172,7 +182,12 @@ fun CheckoutScreen(
                                 return@CheckoutContent
                             }
                             if (email.isNotBlank() && password.isNotBlank()) {
-                                authViewModel.register(email, password, shippingAddress.firstName, shippingAddress.lastName)
+                                authViewModel.register(
+                                    email,
+                                    password,
+                                    shippingAddress.firstName,
+                                    shippingAddress.lastName
+                                )
                             }
                         }
                         checkoutViewModel.placeOrder()
@@ -190,7 +205,14 @@ fun CheckoutScreen(
                     onPasswordVisibleChange = { passwordVisible = it },
                     user = user,
                     onGoogleSignIn = { launcher.launch(googleSignInClient.signInIntent) },
-                    onForgotPassword = { if (email.isNotBlank()) authViewModel.sendPasswordResetEmail(email) }
+                    onForgotPassword = { if (email.isNotBlank()) authViewModel.sendPasswordResetEmail(email) },
+                    useBillingAddress = useBillingAddress,
+                    onUseBillingAddressChange = {
+                        useBillingAddress = it
+                        checkoutViewModel.useBillingAddress(it)
+                    },
+                    billingAddress = billingAddress,
+                    onBillingAddressChange = { checkoutViewModel.updateBillingAddress(it) }
                 )
             }
         }
