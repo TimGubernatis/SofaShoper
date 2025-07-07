@@ -8,7 +8,9 @@ data class User(
     val lastName: String = "",
     val displayName: String? = null,
     val phone: String? = null,
-    val mobile: String? = null
+    val mobile: String? = null,
+    val defaultShippingAddressId: String? = null,
+    val defaultBillingAddressId: String? = null
 )
 
 data class PaymentMethod(

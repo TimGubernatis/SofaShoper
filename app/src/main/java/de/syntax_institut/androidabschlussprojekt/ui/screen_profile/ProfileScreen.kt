@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.window.Dialog
 
 
 @Composable
@@ -47,6 +48,10 @@ fun ProfileScreen(
     val paymentMethods by userProfileViewModel.paymentMethods.collectAsState()
     val defaultPaymentMethodId by userProfileViewModel.defaultPaymentMethodId.collectAsState()
     val defaultPayment = paymentMethods.find { it.first == defaultPaymentMethodId }?.second
+
+    val defaultShippingAddressId by userProfileViewModel.defaultShippingAddressId.collectAsState()
+    val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
+    var useShippingAsBilling by remember { mutableStateOf(false) }
 
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
@@ -156,18 +161,91 @@ fun ProfileScreen(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Lieferadresse", style = MaterialTheme.typography.titleMedium)
+                    Text("Standard-Lieferadresse", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Keine Standard-Lieferadresse ausgewählt.")
+                    if (shippingAddresses.isEmpty()) {
+                        Text("Keine Lieferadresse vorhanden.")
+                    } else {
+                        shippingAddresses.forEach { (id, address) ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                RadioButton(
+                                    selected = id == defaultShippingAddressId,
+                                    onClick = {
+                                        val currentUser = user
+                                        val userId = currentUser?.id
+                                        if (userId != null) {
+                                            userProfileViewModel.setDefaultShippingAddress(userId, id)
+                                        }
+                                    }
+                                )
+                                Column(Modifier.weight(1f)) {
+                                    Text("${address.recipientFirstName} ${address.recipientLastName}, ${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
+                                    if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                                }
+                                IconButton(onClick = {
+                                    val currentUser = user
+                                    val userId = currentUser?.id
+                                    if (userId != null) {
+                                        userProfileViewModel.deleteShippingAddress(userId, id)
+                                    }
+                                }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { userProfileViewModel.openAddShippingAddress() }) { Text("Hinzufügen") }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
+                    Text("Standard-Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Keine Standard-Rechnungsadresse ausgewählt.")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = useShippingAsBilling, onCheckedChange = {
+                            useShippingAsBilling = it
+                            val currentUser = user
+                            val userId = currentUser?.id
+                            val shippingId = defaultShippingAddressId
+                            if (it && userId != null && shippingId != null) {
+                                userProfileViewModel.setDefaultBillingAddress(userId, shippingId)
+                            }
+                        })
+                        Text("Gleich wie Lieferadresse")
+                    }
+                    if (billingAddresses.isEmpty()) {
+                        Text("Keine Rechnungsadresse vorhanden.")
+                    } else {
+                        billingAddresses.forEach { (id, address) ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                RadioButton(
+                                    selected = id == defaultBillingAddressId,
+                                    onClick = {
+                                        val currentUser = user
+                                        val userId = currentUser?.id
+                                        val billingId = id
+                                        if (userId != null) {
+                                            userProfileViewModel.setDefaultBillingAddress(userId, billingId)
+                                        }
+                                    }
+                                )
+                                Column(Modifier.weight(1f)) {
+                                    Text("${address.recipientFirstName} ${address.recipientLastName}, ${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
+                                    if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                                }
+                                IconButton(onClick = {
+                                    val currentUser = user
+                                    val userId = currentUser?.id
+                                    if (userId != null) {
+                                        userProfileViewModel.deleteBillingAddress(userId, id)
+                                    }
+                                }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { userProfileViewModel.openAddBillingAddress() }) { Text("Hinzufügen") }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -188,7 +266,13 @@ fun ProfileScreen(
                         Text("Keine Standard-Zahlungsart ausgewählt.")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { userProfileViewModel.addPayment(user!!.id!!, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod()) }) {
+                    Button(onClick = {
+                        val currentUser = user
+                        val userId = currentUser?.id
+                        if (userId != null) {
+                            userProfileViewModel.addPayment(userId, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod())
+                        }
+                    }) {
                         Text("Zahlungsart hinzufügen")
                     }
                     paymentMethods.forEach { (id, payment) ->
@@ -213,92 +297,37 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Lieferadressen", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.weight(1f))
-                        Button(onClick = { userProfileViewModel.openAddShippingAddress() }) { Text("Hinzufügen") }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    shippingAddresses.forEach { (id, address) ->
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            RadioButton(
-                                selected = false,
-                                onClick = { }
-                            )
-                            Column(Modifier.weight(1f)) {
-                                Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
-                                if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
-                            }
-                            IconButton(onClick = { userProfileViewModel.openEditShippingAddress(id, address) }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
-                            IconButton(onClick = { user?.id?.let { userProfileViewModel.deleteShippingAddress(it, id) } }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Rechnungsadressen", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.weight(1f))
-                        Button(onClick = { userProfileViewModel.openAddBillingAddress() }) { Text("Hinzufügen") }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    billingAddresses.forEach { (id, address) ->
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            RadioButton(
-                                selected = false,
-                                onClick = { }
-                            )
-                            Column(Modifier.weight(1f)) {
-                                Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
-                                if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
-                            }
-                            IconButton(onClick = { userProfileViewModel.openEditBillingAddress(id, address) }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
-                            IconButton(onClick = { user?.id?.let { userProfileViewModel.deleteBillingAddress(it, id) } }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
             if (addressDialogType != UserProfileViewModel.AddressDialogType.NONE) {
                 val isEdit = addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_SHIPPING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
                 val isBilling = addressDialogType == UserProfileViewModel.AddressDialogType.ADD_BILLING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
-                AlertDialog(
-                    onDismissRequest = { userProfileViewModel.closeAddressDialog() },
-                    title = { Text(if (isEdit) (if (isBilling) "Rechnungsadresse bearbeiten" else "Lieferadresse bearbeiten") else (if (isBilling) "Rechnungsadresse hinzufügen" else "Lieferadresse hinzufügen")) },
-                    text = {
-                        AddressFields(
-                            street = addressForm.street,
-                            onStreetChange = { userProfileViewModel.setAddressFormField(street = it) },
-                            houseNumber = addressForm.houseNumber,
-                            onHouseNumberChange = { userProfileViewModel.setAddressFormField(houseNumber = it) },
-                            addressAddition = addressForm.addressAddition ?: "",
-                            onAddressAdditionChange = { userProfileViewModel.setAddressFormField(addressAddition = it) },
-                            postalCode = addressForm.postalCode,
-                            onPostalCodeChange = { userProfileViewModel.setAddressFormField(postalCode = it) },
-                            city = addressForm.city,
-                            onCityChange = { userProfileViewModel.setAddressFormField(city = it) },
-                            country = addressForm.country,
-                            onCountryChange = { userProfileViewModel.setAddressFormField(country = it) }
-                        )
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            user?.id?.let { userProfileViewModel.saveAddress(it) }
-                        }, enabled = userProfileViewModel.validateAddress()) { Text("Speichern") }
-                    },
-                    dismissButton = {
-                        Button(onClick = { userProfileViewModel.closeAddressDialog() }) { Text("Abbrechen") }
+                Dialog(onDismissRequest = { userProfileViewModel.closeAddressDialog() }) {
+                    Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 8.dp) {
+                        Column(Modifier.padding(24.dp).widthIn(min = 320.dp, max = 480.dp)) {
+                            Text(if (isEdit) (if (isBilling) "Rechnungsadresse bearbeiten" else "Lieferadresse bearbeiten") else (if (isBilling) "Rechnungsadresse hinzufügen" else "Lieferadresse hinzufügen"), style = MaterialTheme.typography.titleLarge)
+                            Spacer(Modifier.height(16.dp))
+                            OutlinedTextField(value = addressForm.recipientFirstName, onValueChange = { userProfileViewModel.setAddressFormField(street = it) }, label = { Text("Vorname") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.recipientLastName, onValueChange = { userProfileViewModel.setAddressFormField(houseNumber = it) }, label = { Text("Nachname") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.street, onValueChange = { userProfileViewModel.setAddressFormField(street = it) }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.houseNumber, onValueChange = { userProfileViewModel.setAddressFormField(houseNumber = it) }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.addressAddition ?: "", onValueChange = { userProfileViewModel.setAddressFormField(addressAddition = it) }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.postalCode, onValueChange = { userProfileViewModel.setAddressFormField(postalCode = it) }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.city, onValueChange = { userProfileViewModel.setAddressFormField(city = it) }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.country, onValueChange = { userProfileViewModel.setAddressFormField(country = it) }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
+                            Spacer(Modifier.height(16.dp))
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                Button(onClick = { userProfileViewModel.closeAddressDialog() }) { Text("Abbrechen") }
+                                Spacer(Modifier.width(8.dp))
+                                Button(onClick = {
+                                    val currentUser = user
+                                    val userId = currentUser?.id
+                                    if (userId != null) {
+                                        userProfileViewModel.saveAddress(userId)
+                                    }
+                                }, enabled = userProfileViewModel.validateAddress()) { Text("Speichern") }
+                            }
+                        }
                     }
-                )
+                }
             }
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -321,15 +350,18 @@ fun ProfileScreen(
                 } else {
                     Button(
                         onClick = {
-                            val updatedUser = user!!.copy(
-                                firstName = firstName,
-                                lastName = lastName,
-                                email = email,
-                                phone = phone.takeIf { it.isNotBlank() },
-                                mobile = mobile.takeIf { it.isNotBlank() }
-                            )
-                            userProfileViewModel.updateUser(updatedUser)
-                            isEditing = false
+                            val currentUser = user
+                            if (currentUser != null) {
+                                val updatedUser = currentUser.copy(
+                                    firstName = firstName,
+                                    lastName = lastName,
+                                    email = email,
+                                    phone = phone.takeIf { it.isNotBlank() },
+                                    mobile = mobile.takeIf { it.isNotBlank() }
+                                )
+                                userProfileViewModel.updateUser(updatedUser)
+                                isEditing = false
+                            }
                         },
                         enabled = !isSaving,
                         modifier = Modifier.weight(1f)

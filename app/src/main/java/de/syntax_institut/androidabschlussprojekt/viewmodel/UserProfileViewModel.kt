@@ -54,6 +54,11 @@ class UserProfileViewModel(
     private val _defaultPaymentMethodId = MutableStateFlow<String?>(null)
     val defaultPaymentMethodId: StateFlow<String?> = _defaultPaymentMethodId
 
+    private val _defaultShippingAddressId = MutableStateFlow<String?>(null)
+    val defaultShippingAddressId: StateFlow<String?> = _defaultShippingAddressId
+    private val _defaultBillingAddressId = MutableStateFlow<String?>(null)
+    val defaultBillingAddressId: StateFlow<String?> = _defaultBillingAddressId
+
     init {
         viewModelScope.launch {
             authViewModel.user.collect { currentUser ->
@@ -102,13 +107,33 @@ class UserProfileViewModel(
         viewModelScope.launch {
             _shippingAddresses.value = userRepository.getShippingAddresses(userId)
             _billingAddresses.value = userRepository.getBillingAddresses(userId)
+            checkAndSetDefaultAddresses(userId)
+        }
+    }
+
+    private fun checkAndSetDefaultAddresses(userId: String) {
+        val user = _user.value
+        if (user != null) {
+            if (user.defaultShippingAddressId == null && _shippingAddresses.value.isNotEmpty()) {
+                setDefaultShippingAddress(userId, _shippingAddresses.value.first().first)
+            } else {
+                _defaultShippingAddressId.value = user.defaultShippingAddressId
+            }
+            if (user.defaultBillingAddressId == null && _billingAddresses.value.isNotEmpty()) {
+                setDefaultBillingAddress(userId, _billingAddresses.value.first().first)
+            } else {
+                _defaultBillingAddressId.value = user.defaultBillingAddressId
+            }
         }
     }
 
     fun addShippingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address) {
         viewModelScope.launch {
-            userRepository.addShippingAddress(userId, address)
+            val id = userRepository.addShippingAddress(userId, address)
             loadAddresses(userId)
+            if (_shippingAddresses.value.size == 1) {
+                setDefaultShippingAddress(userId, id)
+            }
         }
     }
 
@@ -128,8 +153,11 @@ class UserProfileViewModel(
 
     fun addBillingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address) {
         viewModelScope.launch {
-            userRepository.addBillingAddress(userId, address)
+            val id = userRepository.addBillingAddress(userId, address)
             loadAddresses(userId)
+            if (_billingAddresses.value.size == 1) {
+                setDefaultBillingAddress(userId, id)
+            }
         }
     }
 
@@ -244,5 +272,21 @@ class UserProfileViewModel(
 
     fun setDefaultPaymentMethod(paymentId: String) {
         _defaultPaymentMethodId.value = paymentId
+    }
+
+    fun setDefaultShippingAddress(userId: String, addressId: String) {
+        viewModelScope.launch {
+            userRepository.setDefaultShippingAddress(userId, addressId)
+            _defaultShippingAddressId.value = addressId
+            _user.value = _user.value?.copy(defaultShippingAddressId = addressId)
+        }
+    }
+
+    fun setDefaultBillingAddress(userId: String, addressId: String) {
+        viewModelScope.launch {
+            userRepository.setDefaultBillingAddress(userId, addressId)
+            _defaultBillingAddressId.value = addressId
+            _user.value = _user.value?.copy(defaultBillingAddressId = addressId)
+        }
     }
 }

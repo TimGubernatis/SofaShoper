@@ -151,4 +151,12 @@ class UserRepository {
         val snapshot = collection.document(userId).collection("payments").get().await()
         return snapshot.documents.mapNotNull { it.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java) }
     }
+
+    suspend fun setDefaultShippingAddress(userId: String, addressId: String) {
+        collection.document(userId).update("defaultShippingAddressId", addressId).await()
+    }
+
+    suspend fun setDefaultBillingAddress(userId: String, addressId: String) {
+        collection.document(userId).update("defaultBillingAddressId", addressId).await()
+    }
 }
