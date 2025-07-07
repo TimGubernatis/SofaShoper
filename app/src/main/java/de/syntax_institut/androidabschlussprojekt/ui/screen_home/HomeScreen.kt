@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CategoryRow
@@ -29,6 +30,10 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,9 +58,41 @@ fun HomeScreen(
     val favorites by favoritesViewModel.favorites.collectAsState()
     val allProducts by homeViewModel.allProducts.collectAsState()
 
+    val cartTotal by cartViewModel.cartTotal.collectAsState()
+    val cartItems by cartViewModel.cartItems.collectAsState()
+    var bottomBarTotal by remember { mutableStateOf(0.0) }
+    var bottomBarCount by remember { mutableStateOf(0) }
+    var pendingProductName by remember { mutableStateOf<String?>(null) }
+    var showCartBar by remember { mutableStateOf(false) }
+
     LaunchedEffect(user?.id, allProducts) {
         user?.id?.let { userId ->
             favoritesViewModel.loadFavorites(userId, allProducts)
+        }
+    }
+
+    // Callback für ProductCard
+    fun onProductAddedToCart(productName: String, productPrice: Double) {
+        pendingProductName = productName
+        bottomBarTotal += productPrice
+        bottomBarCount += 1
+    }
+
+    // Wenn der Warenkorb geleert wird, setze bottomBarTotal und bottomBarCount zurück
+    LaunchedEffect(cartItems) {
+        if (cartItems.isEmpty()) {
+            bottomBarTotal = 0.0
+            bottomBarCount = 0
+        }
+    }
+
+    // Zeige BottomBar erst, wenn cartTotal/cartItems nach dem Hinzufügen aktualisiert sind
+    LaunchedEffect(cartTotal, cartItems) {
+        if (pendingProductName != null) {
+            showCartBar = true
+            delay(5000)
+            showCartBar = false
+            pendingProductName = null
         }
     }
 
@@ -93,6 +130,39 @@ fun HomeScreen(
                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
                 if (itemCount > 0) {
                     Text(itemCount.toString(), modifier = Modifier.padding(start = 4.dp))
+                }
+            }
+        },
+        bottomBar = {
+            if (showCartBar && pendingProductName != null) {
+                Surface(
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "\"${pendingProductName}\" zum Warenkorb hinzugefügt",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "Warenkorb: ${formatPrice(bottomBarTotal)} (${bottomBarCount} Artikel)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }
@@ -147,7 +217,10 @@ fun HomeScreen(
                             ProductCard(
                                 product = product,
                                 onClick = { onProductClick(product.id) },
-                                onAddToCart = { cartViewModel.addToCart(product) },
+                                onAddToCart = {
+                                    cartViewModel.addToCart(product)
+                                    onProductAddedToCart(product.title, product.price)
+                                },
                                 isInCart = cartViewModel.isInCart(product.id),
                                 isFavorite = currentUser?.id != null && favorites.contains(product.id),
                                 onFavoriteClick = currentUser?.id?.let { userId ->
@@ -161,7 +234,8 @@ fun HomeScreen(
                                 },
                                 onLoginRequired = if (currentUser?.id == null) {
                                     { onProfileClick() }
-                                } else null
+                                } else null,
+                                cartTotal = cartTotal
                             )
                         }
                     }
