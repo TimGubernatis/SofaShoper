@@ -3,23 +3,24 @@ package de.syntax_institut.androidabschlussprojekt.ui.screen_profile
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.*
+import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressFields
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.PaymentMethodSelector
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.navigation.NavController
-import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun ProfileScreen(
@@ -36,6 +37,9 @@ fun ProfileScreen(
     val accountDeleted by userProfileViewModel.accountDeleted.collectAsState()
     val context = LocalContext.current
     val openDialog = remember { mutableStateOf(false) }
+    val addressDialogType by userProfileViewModel.addressDialogType.collectAsState()
+    val addressForm by userProfileViewModel.addressForm.collectAsState()
+    val editAddressId by userProfileViewModel.editAddressId.collectAsState()
 
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
@@ -113,6 +117,16 @@ fun ProfileScreen(
     var ibanNumber by remember { mutableStateOf(user?.paymentMethod?.iban ?: "") }
 
     val scrollState = rememberScrollState()
+
+    // Adresslisten laden, wenn User geladen
+    LaunchedEffect(user) {
+        user?.id?.let { userProfileViewModel.loadAddresses(it) }
+    }
+
+    val shippingAddresses by userProfileViewModel.shippingAddresses.collectAsState()
+    val billingAddresses by userProfileViewModel.billingAddresses.collectAsState()
+    val defaultShippingAddressId by userProfileViewModel.defaultShippingAddressId.collectAsState()
+    val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
 
     Box(
         modifier = Modifier
@@ -214,6 +228,95 @@ fun ProfileScreen(
                         if (paymentMethodType == "IBAN") Text("IBAN: $ibanNumber")
                     }
                 }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Lieferadressen-Liste
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Lieferadressen", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = { userProfileViewModel.openAddShippingAddress() }) { Text("Hinzufügen") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    shippingAddresses.forEach { (id, address) ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            RadioButton(
+                                selected = id == defaultShippingAddressId,
+                                onClick = { user?.id?.let { userProfileViewModel.setDefaultShippingAddress(it, id) } }
+                            )
+                            Column(Modifier.weight(1f)) {
+                                Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
+                                if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                            }
+                            IconButton(onClick = { userProfileViewModel.openEditShippingAddress(id, address) }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
+                            IconButton(onClick = { user?.id?.let { userProfileViewModel.deleteShippingAddress(it, id) } }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Rechnungsadressen-Liste
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Rechnungsadressen", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = { userProfileViewModel.openAddBillingAddress() }) { Text("Hinzufügen") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    billingAddresses.forEach { (id, address) ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            RadioButton(
+                                selected = id == defaultBillingAddressId,
+                                onClick = { user?.id?.let { userProfileViewModel.setDefaultBillingAddress(it, id) } }
+                            )
+                            Column(Modifier.weight(1f)) {
+                                Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
+                                if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                            }
+                            IconButton(onClick = { userProfileViewModel.openEditBillingAddress(id, address) }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
+                            IconButton(onClick = { user?.id?.let { userProfileViewModel.deleteBillingAddress(it, id) } }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dialog für Hinzufügen/Bearbeiten von Adressen (MVVM)
+            if (addressDialogType != UserProfileViewModel.AddressDialogType.NONE) {
+                val isEdit = addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_SHIPPING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
+                val isBilling = addressDialogType == UserProfileViewModel.AddressDialogType.ADD_BILLING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
+                AlertDialog(
+                    onDismissRequest = { userProfileViewModel.closeAddressDialog() },
+                    title = { Text(if (isEdit) (if (isBilling) "Rechnungsadresse bearbeiten" else "Lieferadresse bearbeiten") else (if (isBilling) "Rechnungsadresse hinzufügen" else "Lieferadresse hinzufügen")) },
+                    text = {
+                        AddressFields(
+                            street = addressForm.street,
+                            onStreetChange = { userProfileViewModel.setAddressFormField(street = it) },
+                            houseNumber = addressForm.houseNumber,
+                            onHouseNumberChange = { userProfileViewModel.setAddressFormField(houseNumber = it) },
+                            addressAddition = addressForm.addressAddition ?: "",
+                            onAddressAdditionChange = { userProfileViewModel.setAddressFormField(addressAddition = it) },
+                            postalCode = addressForm.postalCode,
+                            onPostalCodeChange = { userProfileViewModel.setAddressFormField(postalCode = it) },
+                            city = addressForm.city,
+                            onCityChange = { userProfileViewModel.setAddressFormField(city = it) },
+                            country = addressForm.country,
+                            onCountryChange = { userProfileViewModel.setAddressFormField(country = it) }
+                        )
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            user?.id?.let { userProfileViewModel.saveAddress(it) }
+                        }, enabled = userProfileViewModel.validateAddress()) { Text("Speichern") }
+                    },
+                    dismissButton = {
+                        Button(onClick = { userProfileViewModel.closeAddressDialog() }) { Text("Abbrechen") }
+                    }
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
 

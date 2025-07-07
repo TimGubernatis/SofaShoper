@@ -30,6 +30,11 @@ import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
 import androidx.compose.material3.HorizontalDivider
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun CheckoutContent(
@@ -57,7 +62,17 @@ fun CheckoutContent(
     useBillingAddress: Boolean,
     onUseBillingAddressChange: (Boolean) -> Unit,
     billingAddress: ShippingAddress?,
-    onBillingAddressChange: (ShippingAddress) -> Unit
+    onBillingAddressChange: (ShippingAddress) -> Unit,
+    shippingAddresses: List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>> = emptyList(),
+    billingAddresses: List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>> = emptyList(),
+    selectedShippingAddressId: String? = null,
+    selectedBillingAddressId: String? = null,
+    onSelectShippingAddress: (String) -> Unit = {},
+    onSelectBillingAddress: (String) -> Unit = {},
+    adoptShippingChanges: Boolean = false,
+    onAdoptShippingChangesChange: (Boolean) -> Unit = {},
+    adoptBillingChanges: Boolean = false,
+    onAdoptBillingChangesChange: (Boolean) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -119,18 +134,77 @@ fun CheckoutContent(
         }
         
 
+        if (user != null && shippingAddresses.isNotEmpty()) {
+            var expanded by remember { mutableStateOf(false) }
+            Box {
+                OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                    val selected = shippingAddresses.find { it.first == selectedShippingAddressId }?.second
+                    Text(selected?.let { "${it.street} ${it.houseNumber}, ${it.postalCode} ${it.city}" } ?: "Lieferadresse wählen")
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    shippingAddresses.forEach { (id, address) ->
+                        DropdownMenuItem(
+                            text = { Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}") },
+                            onClick = {
+                                onSelectShippingAddress(id)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+        }
         AddressSection(
             address = shippingAddress,
             onAddressChange = onAddressChange,
             title = "Lieferadresse"
         )
-        
+        if (user != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = adoptShippingChanges,
+                    onCheckedChange = onAdoptShippingChangesChange
+                )
+                Text("Geänderte Lieferadresse übernehmen und speichern")
+            }
+        }
         if (useBillingAddress) {
+            if (user != null && billingAddresses.isNotEmpty()) {
+                var expanded by remember { mutableStateOf(false) }
+                Box {
+                    OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        val selected = billingAddresses.find { it.first == selectedBillingAddressId }?.second
+                        Text(selected?.let { "${it.street} ${it.houseNumber}, ${it.postalCode} ${it.city}" } ?: "Rechnungsadresse wählen")
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        billingAddresses.forEach { (id, address) ->
+                            DropdownMenuItem(
+                                text = { Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}") },
+                                onClick = {
+                                    onSelectBillingAddress(id)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            }
             AddressSection(
                 address = billingAddress ?: ShippingAddress("", "", "", "", ""),
                 onAddressChange = onBillingAddressChange,
                 title = "Rechnungsadresse"
             )
+            if (user != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = adoptBillingChanges,
+                        onCheckedChange = onAdoptBillingChangesChange
+                    )
+                    Text("Geänderte Rechnungsadresse übernehmen und speichern")
+                }
+            }
         }
         
 

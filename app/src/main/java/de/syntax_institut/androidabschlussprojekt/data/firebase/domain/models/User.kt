@@ -16,7 +16,10 @@ data class User(
 
     val favorites: List<String> = emptyList(),
 
-    val orderHistory: List<Order> = emptyList()
+    val orderHistory: List<Order> = emptyList(),
+
+    val defaultShippingAddressId: String? = null,
+    val defaultBillingAddressId: String? = null
 )
 
 data class Address(

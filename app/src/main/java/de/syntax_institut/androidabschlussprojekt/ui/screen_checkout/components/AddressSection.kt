@@ -13,6 +13,8 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacin
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 
 @Composable
 fun AddressSection(
@@ -58,19 +60,13 @@ fun AddressSection(
                     value = address.street,
                     onValueChange = { onAddressChange(address.copy(street = it)) },
                     label = { Text("Straße") },
-                    modifier = Modifier.weight(2f),
-                    textStyle = LocalTextStyle.current.copy(fontSize = responsiveSmallTextSize())
+                    modifier = Modifier.weight(1.2f)
                 )
                 OutlinedTextField(
                     value = address.houseNumber ?: "",
                     onValueChange = { onAddressChange(address.copy(houseNumber = it)) },
-                    label = { Text(
-                        "Hausnummer",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    ) },
-                    modifier = Modifier.weight(1f),
-                    textStyle = LocalTextStyle.current.copy(fontSize = responsiveSmallTextSize())
+                    label = { Text("Hausnr.") },
+                    modifier = Modifier.weight(0.8f)
                 )
             }
             
@@ -79,7 +75,7 @@ fun AddressSection(
             OutlinedTextField(
                 value = address.addressAddition ?: "",
                 onValueChange = { onAddressChange(address.copy(addressAddition = it)) },
-                label = { Text("Adresszusatz") },
+                label = { Text(responsiveLabel("Adresszusatz", "Zusatz")) },
                 modifier = Modifier.fillMaxWidth()
             )
             
@@ -107,11 +103,18 @@ fun AddressSection(
             OutlinedTextField(
                 value = address.phone ?: "",
                 onValueChange = { onAddressChange(address.copy(phone = it)) },
-                label = { Text("Telefon (optional)") },
+                label = { Text(responsiveLabel("Telefon (optional)", "Tel.")) },
                 modifier = Modifier.fillMaxWidth()
             )
         }
     }
+}
+
+@Composable
+fun responsiveLabel(long: String, short: String, minWidthForLong: Dp = 400.dp): String {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    return if (screenWidth > minWidthForLong) long else short
 }
 
 

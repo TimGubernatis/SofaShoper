@@ -35,6 +35,18 @@ class CheckoutViewModel(
     val cartItems = cartRepository.cartItems
     val cartTotal = cartRepository.cartTotal
     
+    private val _shippingAddresses = MutableStateFlow<List<Pair<String, Address>>>(emptyList())
+    val shippingAddresses: StateFlow<List<Pair<String, Address>>> = _shippingAddresses
+
+    private val _billingAddresses = MutableStateFlow<List<Pair<String, Address>>>(emptyList())
+    val billingAddresses: StateFlow<List<Pair<String, Address>>> = _billingAddresses
+
+    private val _selectedShippingAddressId = MutableStateFlow<String?>(null)
+    val selectedShippingAddressId: StateFlow<String?> = _selectedShippingAddressId
+
+    private val _selectedBillingAddressId = MutableStateFlow<String?>(null)
+    val selectedBillingAddressId: StateFlow<String?> = _selectedBillingAddressId
+    
     fun updateShippingAddress(address: ShippingAddress) {
         _shippingAddress.value = address
     }
@@ -144,6 +156,86 @@ class CheckoutViewModel(
             "CASH_ON_DELIVERY" -> PaymentMethod.CASH_ON_DELIVERY
             else -> null
         }
+    }
+
+    fun loadAddresses(userId: String) {
+        viewModelScope.launch {
+            _shippingAddresses.value = userRepository?.getShippingAddresses(userId) ?: emptyList()
+            _billingAddresses.value = userRepository?.getBillingAddresses(userId) ?: emptyList()
+            val user = userRepository?.getUser(userId)
+            _selectedShippingAddressId.value = user?.defaultShippingAddressId
+            _selectedBillingAddressId.value = user?.defaultBillingAddressId
+            // Setze initial die Adressen im State
+            _shippingAddresses.value.find { it.first == user?.defaultShippingAddressId }?.second?.let {
+                _shippingAddress.value = it.toShippingAddress(user)
+            }
+            _billingAddresses.value.find { it.first == user?.defaultBillingAddressId }?.second?.let {
+                _billingAddress.value = it.toShippingAddress(user)
+            }
+        }
+    }
+
+    fun selectShippingAddress(addressId: String) {
+        _selectedShippingAddressId.value = addressId
+        val address = _shippingAddresses.value.find { it.first == addressId }?.second
+        address?.let { _shippingAddress.value = it.toShippingAddress(authViewModel?.user?.value) }
+    }
+
+    fun selectBillingAddress(addressId: String) {
+        _selectedBillingAddressId.value = addressId
+        val address = _billingAddresses.value.find { it.first == addressId }?.second
+        address?.let { _billingAddress.value = it.toShippingAddress(authViewModel?.user?.value) }
+    }
+
+    fun saveAndSelectShippingAddress(userId: String, address: ShippingAddress) {
+        viewModelScope.launch {
+            val newId = userRepository?.addShippingAddress(userId, Address(
+                street = address.street,
+                houseNumber = address.houseNumber ?: "",
+                addressAddition = address.addressAddition,
+                postalCode = address.postalCode,
+                city = address.city,
+                country = address.country
+            ))
+            if (newId != null) {
+                userRepository.setDefaultShippingAddress(userId, newId)
+                loadAddresses(userId)
+                selectShippingAddress(newId)
+            }
+        }
+    }
+
+    fun saveAndSelectBillingAddress(userId: String, address: ShippingAddress) {
+        viewModelScope.launch {
+            val newId = userRepository?.addBillingAddress(userId, Address(
+                street = address.street,
+                houseNumber = address.houseNumber ?: "",
+                addressAddition = address.addressAddition,
+                postalCode = address.postalCode,
+                city = address.city,
+                country = address.country
+            ))
+            if (newId != null) {
+                userRepository.setDefaultBillingAddress(userId, newId)
+                loadAddresses(userId)
+                selectBillingAddress(newId)
+            }
+        }
+    }
+
+    // Hilfsfunktion zur Konvertierung Address -> ShippingAddress
+    private fun Address.toShippingAddress(user: User?): ShippingAddress {
+        return ShippingAddress(
+            firstName = user?.firstName ?: "",
+            lastName = user?.lastName ?: "",
+            street = this.street,
+            city = this.city,
+            postalCode = this.postalCode,
+            country = this.country,
+            phone = user?.phone,
+            houseNumber = this.houseNumber,
+            addressAddition = this.addressAddition
+        )
     }
 }
 

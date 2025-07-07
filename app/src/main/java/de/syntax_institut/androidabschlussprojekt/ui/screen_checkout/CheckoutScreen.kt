@@ -57,6 +57,12 @@ fun CheckoutScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var showPasswordDialog by remember { mutableStateOf(false) }
+    val shippingAddresses by checkoutViewModel.shippingAddresses.collectAsState()
+    val billingAddresses by checkoutViewModel.billingAddresses.collectAsState()
+    val selectedShippingAddressId by checkoutViewModel.selectedShippingAddressId.collectAsState()
+    val selectedBillingAddressId by checkoutViewModel.selectedBillingAddressId.collectAsState()
+    var adoptShippingChanges by remember { mutableStateOf(false) }
+    var adoptBillingChanges by remember { mutableStateOf(false) }
 
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -85,12 +91,15 @@ fun CheckoutScreen(
         }
     }
 
-
     LaunchedEffect(user) {
         user?.let {
             checkoutViewModel.prefillFromUser(it)
             email = it.email
         }
+    }
+
+    LaunchedEffect(user) {
+        user?.id?.let { checkoutViewModel.loadAddresses(it) }
     }
 
     Scaffold(
@@ -190,6 +199,16 @@ fun CheckoutScreen(
                                 )
                             }
                         }
+                        user?.let { user ->
+                            if (adoptShippingChanges) {
+                                checkoutViewModel.saveAndSelectShippingAddress(user.id!!, shippingAddress)
+                            }
+                            if (adoptBillingChanges && useBillingAddress) {
+                                billingAddress?.let { safeBillingAddress ->
+                                    checkoutViewModel.saveAndSelectBillingAddress(user.id!!, safeBillingAddress)
+                                }
+                            }
+                        }
                         checkoutViewModel.placeOrder()
                     },
                     modifier = Modifier.padding(padding),
@@ -212,7 +231,17 @@ fun CheckoutScreen(
                         checkoutViewModel.useBillingAddress(it)
                     },
                     billingAddress = billingAddress,
-                    onBillingAddressChange = { checkoutViewModel.updateBillingAddress(it) }
+                    onBillingAddressChange = { checkoutViewModel.updateBillingAddress(it) },
+                    shippingAddresses = shippingAddresses,
+                    billingAddresses = billingAddresses,
+                    selectedShippingAddressId = selectedShippingAddressId,
+                    selectedBillingAddressId = selectedBillingAddressId,
+                    onSelectShippingAddress = { checkoutViewModel.selectShippingAddress(it) },
+                    onSelectBillingAddress = { checkoutViewModel.selectBillingAddress(it) },
+                    adoptShippingChanges = adoptShippingChanges,
+                    onAdoptShippingChangesChange = { adoptShippingChanges = it },
+                    adoptBillingChanges = adoptBillingChanges,
+                    onAdoptBillingChangesChange = { adoptBillingChanges = it }
                 )
             }
         }
