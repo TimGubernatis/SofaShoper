@@ -66,7 +66,16 @@ fun PaymentMethodSection(
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     PaymentMethodType.values().forEach { methodType ->
                         DropdownMenuItem(
-                            text = {},
+                            text = { Text(
+                                when (methodType) {
+                                    PaymentMethodType.PAYPAL -> "PayPal"
+                                    PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                                    PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                                    PaymentMethodType.NACHNAHME -> "Nachnahme"
+                                    PaymentMethodType.VISA -> "Visa"
+                                    PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                                }
+                            ) },
                             onClick = {
                                 val paymentMethod = when (methodType) {
                                     PaymentMethodType.PAYPAL -> PaymentMethod.paypal("")

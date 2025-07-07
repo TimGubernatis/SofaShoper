@@ -1,12 +1,17 @@
 package de.syntax_institut.androidabschlussprojekt.ui.screen_profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,15 +19,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressFields
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType
+import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.PaymentMethodSection
+import androidx.compose.ui.res.painterResource
+import de.syntax_institut.androidabschlussprojekt.R
+import androidx.compose.ui.res.stringResource
 
 
 @Composable
@@ -44,7 +53,7 @@ fun ProfileScreen(
     val addressForm by userProfileViewModel.addressForm.collectAsState()
     val editAddressId by userProfileViewModel.editAddressId.collectAsState()
 
-    // Zahlungsarten laden
+
     val paymentMethods by userProfileViewModel.paymentMethods.collectAsState()
     val defaultPaymentMethodId by userProfileViewModel.defaultPaymentMethodId.collectAsState()
     val defaultPayment = paymentMethods.find { it.first == defaultPaymentMethodId }?.second
@@ -53,9 +62,13 @@ fun ProfileScreen(
     val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
     var useShippingAsBilling by remember { mutableStateOf(false) }
 
-    // State für Bestätigungsdialoge
-    var showEditDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // Pair<addressId, isBilling>
-    var showDeleteDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // Pair<addressId, isBilling>
+
+    var showEditDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var showDeleteDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var showPaymentDialog by remember { mutableStateOf(false) }
+    var newPaymentMethod by remember { mutableStateOf(PaymentMethod.none()) }
+    var paypalEmail by remember { mutableStateOf("") }
+    var iban by remember { mutableStateOf("") }
 
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
@@ -317,34 +330,112 @@ fun ProfileScreen(
                         Text("Keine Standard-Zahlungsart ausgewählt.")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = {
-                        val currentUser = user
-                        val userId = currentUser?.id
-                        if (userId != null) {
-                            userProfileViewModel.addPayment(userId, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod())
-                        }
-                    }) {
+                    Button(onClick = { showPaymentDialog = true }) {
                         Text("Zahlungsart hinzufügen")
                     }
-                    paymentMethods.forEach { (id, payment) ->
+                    if (showPaymentDialog) {
+                        Dialog(onDismissRequest = { showPaymentDialog = false }) {
+                            Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 8.dp) {
+                                Column(Modifier.padding(24.dp).widthIn(min = 320.dp, max = 480.dp)) {
+                                    Text("Zahlungsart auswählen", style = MaterialTheme.typography.titleLarge)
+                                    Spacer(Modifier.height(16.dp))
+                                    PaymentMethodSection(
+                                        selectedMethod = newPaymentMethod,
+                                        onMethodSelect = { newPaymentMethod = it }
+                                    )
+                                    when (newPaymentMethod.type) {
+                                        PaymentMethodType.PAYPAL -> {
+                                            OutlinedTextField(
+                                                value = paypalEmail,
+                                                onValueChange = { paypalEmail = it },
+                                                label = { Text("PayPal Email") },
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                        }
+                                        PaymentMethodType.UEBERWEISUNG -> {
+                                            OutlinedTextField(
+                                                value = iban,
+                                                onValueChange = { iban = it },
+                                                label = { Text("IBAN") },
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                        }
+                                        else -> {}
+                                    }
+                                    Spacer(Modifier.height(16.dp))
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                        Button(onClick = { showPaymentDialog = false }) { Text("Abbrechen") }
+                                        Spacer(Modifier.width(8.dp))
+                                        Button(onClick = {
+                                            val currentUser = user
+                                            val userId = currentUser?.id
+                                            val paymentToSave = when (newPaymentMethod.type) {
+                                                PaymentMethodType.PAYPAL -> newPaymentMethod.copy(email = paypalEmail)
+                                                PaymentMethodType.UEBERWEISUNG -> newPaymentMethod.copy(iban = iban)
+                                                else -> newPaymentMethod
+                                            }
+                                            if (userId != null) {
+                                                userProfileViewModel.addPayment(userId, paymentToSave)
+                                            }
+                                            showPaymentDialog = false
+                                            paypalEmail = ""
+                                            iban = ""
+                                            newPaymentMethod = PaymentMethod.none()
+                                        }) { Text("Speichern") }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    paymentMethods.forEachIndexed { index, (id, payment) ->
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             RadioButton(
                                 selected = id == defaultPaymentMethodId,
                                 onClick = { userProfileViewModel.setDefaultPaymentMethod(id) }
                             )
-                            Column(Modifier.weight(1f)) {
-                                Text("Typ: " + when (payment.type) {
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.PAYPAL -> "PayPal"
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.ABBUCHUNG -> "Abbuchung"
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.UEBERWEISUNG -> "Überweisung"
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.NACHNAHME -> "Nachnahme"
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.VISA -> "Visa"
-                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
-                                })
-                                if (payment.email.isNotBlank()) Text("PayPal: ${payment.email}")
-                                if (payment.iban.isNotBlank()) Text("IBAN: ${payment.iban}")
+                            // Icon + Name wie im Dropdown
+                            val iconMap = mapOf(
+                                PaymentMethodType.ABBUCHUNG to Icons.Default.AccountBalance,
+                                PaymentMethodType.UEBERWEISUNG to Icons.Default.SyncAlt,
+                                PaymentMethodType.NACHNAHME to Icons.Default.AttachMoney
+                            )
+                            val vectorIconMap = mapOf(
+                                PaymentMethodType.PAYPAL to R.drawable.ic_paypal,
+                                PaymentMethodType.VISA to R.drawable.ic_visa,
+                                PaymentMethodType.AMAZON_PAY to R.drawable.ic_amazon_pay
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                when (payment.type) {
+                                    PaymentMethodType.PAYPAL, PaymentMethodType.VISA, PaymentMethodType.AMAZON_PAY ->
+                                        Image(painter = painterResource(vectorIconMap[payment.type]!!), contentDescription = null, modifier = Modifier.size(32.dp))
+                                    else ->
+                                        Icon(iconMap[payment.type] ?: Icons.Default.Payment, contentDescription = null, modifier = Modifier.size(32.dp))
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    when (payment.type) {
+                                        PaymentMethodType.PAYPAL -> "PayPal"
+                                        PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                                        PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                                        PaymentMethodType.NACHNAHME -> "Nachnahme"
+                                        PaymentMethodType.VISA -> "Visa"
+                                        PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
-                            IconButton(onClick = { userProfileViewModel.deletePayment(user!!.id!!, id) }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                            Spacer(Modifier.weight(1f))
+
+                            if (paymentMethods.size > 1) {
+                                IconButton(onClick = {
+                                    userProfileViewModel.deletePayment(user!!.id!!, id)
+
+                                    if (id == defaultPaymentMethodId) {
+                                        val next = paymentMethods.filter { it.first != id }.firstOrNull()?.first
+                                        if (next != null) userProfileViewModel.setDefaultPaymentMethod(next)
+                                    }
+                                }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                            }
                         }
                     }
                 }
@@ -391,7 +482,7 @@ fun ProfileScreen(
         }
     }
 
-    // Bestätigungsdialoge:
+
     if (showEditDialog != null) {
         val (addressId, isBilling) = showEditDialog!!
         AlertDialog(
