@@ -32,6 +32,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.CheckoutContent
 import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.OrderSuccessScreen
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,8 +189,8 @@ fun CheckoutScreen(
                                 authViewModel.register(
                                     email,
                                     password,
-                                    shippingAddress.firstName,
-                                    shippingAddress.lastName
+                                    shippingAddress.recipientFirstName,
+                                    shippingAddress.recipientLastName
                                 ) { newUser ->
                                     if (adoptShippingChanges) {
                                         checkoutViewModel.saveAndSelectShippingAddress(newUser.id!!, shippingAddress)

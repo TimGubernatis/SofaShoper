@@ -2,6 +2,7 @@ package de.syntax_institut.androidabschlussprojekt.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import de.syntax_institut.androidabschlussprojekt.data.model.*
 import de.syntax_institut.androidabschlussprojekt.data.repository.CartRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User
-import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod as FirebasePaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
@@ -23,14 +23,14 @@ class CheckoutViewModel(
     private val _checkoutState = MutableStateFlow<CheckoutState>(CheckoutState.Initial)
     val checkoutState: StateFlow<CheckoutState> = _checkoutState.asStateFlow()
     
-    private val _shippingAddress = MutableStateFlow(ShippingAddress("", "", "", "", ""))
-    val shippingAddress: StateFlow<ShippingAddress> = _shippingAddress.asStateFlow()
+    private val _shippingAddress = MutableStateFlow(Address())
+    val shippingAddress: StateFlow<Address> = _shippingAddress.asStateFlow()
     
     private val _selectedPaymentMethod = MutableStateFlow<PaymentMethod?>(null)
     val selectedPaymentMethod: StateFlow<PaymentMethod?> = _selectedPaymentMethod.asStateFlow()
     
-    private val _billingAddress = MutableStateFlow<ShippingAddress?>(null)
-    val billingAddress: StateFlow<ShippingAddress?> = _billingAddress.asStateFlow()
+    private val _billingAddress = MutableStateFlow<Address?>(null)
+    val billingAddress: StateFlow<Address?> = _billingAddress.asStateFlow()
     
     val cartItems = cartRepository.cartItems
     val cartTotal = cartRepository.cartTotal
@@ -47,7 +47,7 @@ class CheckoutViewModel(
     private val _selectedBillingAddressId = MutableStateFlow<String?>(null)
     val selectedBillingAddressId: StateFlow<String?> = _selectedBillingAddressId
     
-    fun updateShippingAddress(address: ShippingAddress) {
+    fun updateShippingAddress(address: Address) {
         _shippingAddress.value = address
     }
     
@@ -55,7 +55,7 @@ class CheckoutViewModel(
         _selectedPaymentMethod.value = method
     }
     
-    fun updateBillingAddress(address: ShippingAddress?) {
+    fun updateBillingAddress(address: Address?) {
         _billingAddress.value = address
     }
     
@@ -66,13 +66,12 @@ class CheckoutViewModel(
     fun validateCheckout(): Boolean {
         val address = _shippingAddress.value
         val paymentMethod = _selectedPaymentMethod.value
-        
-        return address.firstName.isNotBlank() &&
-                address.lastName.isNotBlank() &&
-                address.street.isNotBlank() &&
-                address.city.isNotBlank() &&
-                address.postalCode.isNotBlank() &&
-                paymentMethod != null
+        return address.recipientFirstName.isNotBlank() &&
+               address.recipientLastName.isNotBlank() &&
+               address.street.isNotBlank() &&
+               address.city.isNotBlank() &&
+               address.postalCode.isNotBlank() &&
+               paymentMethod != null
     }
     
     fun placeOrder() {
@@ -147,7 +146,7 @@ class CheckoutViewModel(
     
     fun resetCheckout() {
         _checkoutState.value = CheckoutState.Initial
-        _shippingAddress.value = ShippingAddress("", "", "", "", "")
+        _shippingAddress.value = Address()
         _selectedPaymentMethod.value = null
     }
     
@@ -170,7 +169,7 @@ class CheckoutViewModel(
         address?.let { _billingAddress.value = it.toShippingAddress(authViewModel?.user?.value) }
     }
 
-    fun saveAndSelectShippingAddress(userId: String, address: ShippingAddress) {
+    fun saveAndSelectShippingAddress(userId: String, address: Address) {
         viewModelScope.launch {
             val newId = userRepository?.addShippingAddress(userId, Address(
                 street = address.street,
@@ -187,7 +186,7 @@ class CheckoutViewModel(
         }
     }
 
-    fun saveAndSelectBillingAddress(userId: String, address: ShippingAddress) {
+    fun saveAndSelectBillingAddress(userId: String, address: Address) {
         viewModelScope.launch {
             val newId = userRepository?.addBillingAddress(userId, Address(
                 street = address.street,
@@ -205,10 +204,10 @@ class CheckoutViewModel(
     }
 
 
-    private fun Address.toShippingAddress(user: User?): ShippingAddress {
-        return ShippingAddress(
-            firstName = user?.firstName ?: "",
-            lastName = user?.lastName ?: "",
+    private fun Address.toShippingAddress(user: User?): Address {
+        return Address(
+            recipientFirstName = user?.firstName ?: "",
+            recipientLastName = user?.lastName ?: "",
             street = this.street,
             city = this.city,
             postalCode = this.postalCode,

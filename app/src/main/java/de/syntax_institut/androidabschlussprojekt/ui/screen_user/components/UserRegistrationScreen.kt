@@ -28,6 +28,8 @@ fun UserRegistrationScreen(
     var country by remember { mutableStateOf("DE") }
 
     var billingSameAsShipping by remember { mutableStateOf(true) }
+    var billingFirstName by remember { mutableStateOf("") }
+    var billingLastName by remember { mutableStateOf("") }
     var billingStreet by remember { mutableStateOf("") }
     var billingHouseNumber by remember { mutableStateOf("") }
     var billingPostalCode by remember { mutableStateOf("") }
@@ -126,6 +128,18 @@ fun UserRegistrationScreen(
         if (!billingSameAsShipping) {
             Text("Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
+                value = billingFirstName,
+                onValueChange = { billingFirstName = it },
+                label = { Text("Vorname (Rechnung)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = billingLastName,
+                onValueChange = { billingLastName = it },
+                label = { Text("Nachname (Rechnung)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
                 value = billingStreet,
                 onValueChange = { billingStreet = it },
                 label = { Text("Straße") },
@@ -195,6 +209,8 @@ fun UserRegistrationScreen(
                     phone = phone.takeIf { it.isNotBlank() },
                     mobile = mobile.takeIf { it.isNotBlank() },
                     shippingAddress = Address(
+                        recipientFirstName = firstName,
+                        recipientLastName = lastName,
                         street = street,
                         houseNumber = houseNumber,
                         postalCode = postalCode,
@@ -203,6 +219,8 @@ fun UserRegistrationScreen(
                     ),
                     billingAddress = if (billingSameAsShipping) {
                         Address(
+                            recipientFirstName = firstName,
+                            recipientLastName = lastName,
                             street = street,
                             houseNumber = houseNumber,
                             postalCode = postalCode,
@@ -211,6 +229,8 @@ fun UserRegistrationScreen(
                         )
                     } else {
                         Address(
+                            recipientFirstName = billingFirstName,
+                            recipientLastName = billingLastName,
                             street = billingStreet,
                             houseNumber = billingHouseNumber,
                             postalCode = billingPostalCode,

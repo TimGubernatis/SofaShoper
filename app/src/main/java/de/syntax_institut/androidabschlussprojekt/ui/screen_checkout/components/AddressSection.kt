@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import de.syntax_institut.androidabschlussprojekt.data.model.ShippingAddress
 import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
@@ -15,11 +14,12 @@ import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 
 @Composable
 fun AddressSection(
-    address: ShippingAddress,
-    onAddressChange: (ShippingAddress) -> Unit,
+    address: Address,
+    onAddressChange: (Address) -> Unit,
     title: String = "Lieferadresse"
 ) {
     Card {
@@ -38,14 +38,14 @@ fun AddressSection(
                 horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
             ) {
                 OutlinedTextField(
-                    value = address.firstName,
-                    onValueChange = { onAddressChange(address.copy(firstName = it)) },
+                    value = address.recipientFirstName,
+                    onValueChange = { onAddressChange(address.copy(recipientFirstName = it)) },
                     label = { Text("Vorname") },
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
-                    value = address.lastName,
-                    onValueChange = { onAddressChange(address.copy(lastName = it)) },
+                    value = address.recipientLastName,
+                    onValueChange = { onAddressChange(address.copy(recipientLastName = it)) },
                     label = { Text("Nachname") },
                     modifier = Modifier.weight(1f)
                 )
@@ -63,7 +63,7 @@ fun AddressSection(
                     modifier = Modifier.weight(1.2f)
                 )
                 OutlinedTextField(
-                    value = address.houseNumber ?: "",
+                    value = address.houseNumber,
                     onValueChange = { onAddressChange(address.copy(houseNumber = it)) },
                     label = { Text("Hausnr.") },
                     modifier = Modifier.weight(0.8f)

@@ -1,12 +1,14 @@
 package de.syntax_institut.androidabschlussprojekt.data.model
 
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
+
 data class Order(
     val id: String = generateOrderId(),
     val items: List<CartItem>,
     val total: Double,
     val status: OrderStatus = OrderStatus.PENDING,
     val createdAt: Long = System.currentTimeMillis(),
-    val shippingAddress: ShippingAddress? = null,
+    val shippingAddress: Address? = null,
     val paymentMethod: PaymentMethod? = null
 ) {
     companion object {
@@ -23,18 +25,6 @@ enum class OrderStatus {
     DELIVERED,
     CANCELLED
 }
-
-data class ShippingAddress(
-    val firstName: String,
-    val lastName: String,
-    val street: String,
-    val city: String,
-    val postalCode: String,
-    val country: String = "Deutschland",
-    val phone: String? = null,
-    val houseNumber: String? = null,
-    val addressAddition: String? = null
-)
 
 enum class PaymentMethod {
     CREDIT_CARD,

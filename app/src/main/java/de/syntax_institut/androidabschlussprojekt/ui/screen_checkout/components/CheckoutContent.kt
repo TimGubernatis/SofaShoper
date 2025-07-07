@@ -16,7 +16,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import de.syntax_institut.androidabschlussprojekt.data.model.CartItem
 import de.syntax_institut.androidabschlussprojekt.data.model.PaymentMethod
-import de.syntax_institut.androidabschlussprojekt.data.model.ShippingAddress
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.dp
 fun CheckoutContent(
     cartItems: List<CartItem>,
     cartTotal: Double,
-    shippingAddress: ShippingAddress,
+    shippingAddress: Address,
     selectedPaymentMethod: PaymentMethod?,
-    onAddressChange: (ShippingAddress) -> Unit,
+    onAddressChange: (Address) -> Unit,
     onPaymentMethodSelect: (PaymentMethod) -> Unit,
     onPlaceOrder: () -> Unit,
     modifier: Modifier = Modifier,
@@ -61,10 +61,10 @@ fun CheckoutContent(
     onForgotPassword: () -> Unit,
     useBillingAddress: Boolean,
     onUseBillingAddressChange: (Boolean) -> Unit,
-    billingAddress: ShippingAddress?,
-    onBillingAddressChange: (ShippingAddress) -> Unit,
-    shippingAddresses: List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>> = emptyList(),
-    billingAddresses: List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>> = emptyList(),
+    billingAddress: Address?,
+    onBillingAddressChange: (Address) -> Unit,
+    shippingAddresses: List<Pair<String, Address>> = emptyList(),
+    billingAddresses: List<Pair<String, Address>> = emptyList(),
     selectedShippingAddressId: String? = null,
     selectedBillingAddressId: String? = null,
     onSelectShippingAddress: (String) -> Unit = {},
@@ -192,7 +192,7 @@ fun CheckoutContent(
                 Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
             }
             AddressSection(
-                address = billingAddress ?: ShippingAddress("", "", "", "", ""),
+                address = billingAddress ?: Address("", "", "", "", "", "", "", "", "", ""),
                 onAddressChange = onBillingAddressChange,
                 title = "Rechnungsadresse"
             )
@@ -280,8 +280,8 @@ fun CheckoutContent(
                 .fillMaxWidth()
                 .height(responsiveButtonHeight()),
             enabled = selectedPaymentMethod != null && 
-                     shippingAddress.firstName.isNotBlank() &&
-                     shippingAddress.lastName.isNotBlank() &&
+                     shippingAddress.recipientFirstName.isNotBlank() &&
+                     shippingAddress.recipientLastName.isNotBlank() &&
                      shippingAddress.street.isNotBlank() &&
                      shippingAddress.city.isNotBlank() &&
                      shippingAddress.postalCode.isNotBlank() &&

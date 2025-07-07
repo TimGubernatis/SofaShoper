@@ -10,15 +10,6 @@ data class User(
     val mobile: String? = null
 )
 
-data class Address(
-    val street: String = "",
-    val houseNumber: String = "",
-    val addressAddition: String? = null,
-    val postalCode: String = "",
-    val city: String = "",
-    val country: String = "DE"
-)
-
 data class PaymentMethod(
     val type: String = "None",
     val email: String = "",
