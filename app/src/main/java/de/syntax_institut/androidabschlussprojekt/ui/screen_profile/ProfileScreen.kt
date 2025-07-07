@@ -53,6 +53,10 @@ fun ProfileScreen(
     val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
     var useShippingAsBilling by remember { mutableStateOf(false) }
 
+    // State für Bestätigungsdialoge
+    var showEditDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // Pair<addressId, isBilling>
+    var showDeleteDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // Pair<addressId, isBilling>
+
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
             userLoaded = true
@@ -155,6 +159,42 @@ fun ProfileScreen(
                         if (phone.isNotBlank()) Text("Telefon: $phone")
                         if (mobile.isNotBlank()) Text("Mobil: $mobile")
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (!isEditing) {
+                            Button(onClick = { isEditing = true }, modifier = Modifier.weight(1f)) {
+                                Text("Bearbeiten")
+                            }
+                        } else {
+                            Button(
+                                onClick = {
+                                    val currentUser = user
+                                    if (currentUser != null) {
+                                        val updatedUser = currentUser.copy(
+                                            firstName = firstName,
+                                            lastName = lastName,
+                                            email = email,
+                                            phone = phone.takeIf { it.isNotBlank() },
+                                            mobile = mobile.takeIf { it.isNotBlank() }
+                                        )
+                                        userProfileViewModel.updateUser(updatedUser)
+                                        isEditing = false
+                                    }
+                                },
+                                enabled = !isSaving,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Speichern")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = { isEditing = false }, modifier = Modifier.weight(1f)) {
+                                Text("Abbrechen")
+                            }
+                        }
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -179,16 +219,17 @@ fun ProfileScreen(
                                     }
                                 )
                                 Column(Modifier.weight(1f)) {
-                                    Text("${address.recipientFirstName} ${address.recipientLastName}, ${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
-                                    if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                                    Text("Name: ${address.recipientFirstName} ${address.recipientLastName}")
+                                    Text("Straße: ${address.street} ${address.houseNumber}")
+                                    if (!address.addressAddition.isNullOrBlank()) Text("Zusatz: ${address.addressAddition}")
+                                    Text("PLZ: ${address.postalCode}")
+                                    Text("Stadt: ${address.city}")
+                                    Text("Land: ${address.country}")
                                 }
-                                IconButton(onClick = {
-                                    val currentUser = user
-                                    val userId = currentUser?.id
-                                    if (userId != null) {
-                                        userProfileViewModel.deleteShippingAddress(userId, id)
-                                    }
-                                }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                                IconButton(onClick = { showEditDialog = id to false }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
+                                if (shippingAddresses.size > 1) {
+                                    IconButton(onClick = { showDeleteDialog = id to false }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                                }
                             }
                         }
                     }
@@ -202,45 +243,52 @@ fun ProfileScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("Standard-Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = useShippingAsBilling, onCheckedChange = {
-                            useShippingAsBilling = it
+                    val hasBillingAddresses = billingAddresses.isNotEmpty()
+                    val isCheckboxEnabled = hasBillingAddresses
+                    val isCheckboxChecked = if (!hasBillingAddresses) true else useShippingAsBilling
+                    Checkbox(
+                        checked = isCheckboxChecked,
+                        onCheckedChange = {
+                            if (isCheckboxEnabled) useShippingAsBilling = it
                             val currentUser = user
                             val userId = currentUser?.id
                             val shippingId = defaultShippingAddressId
                             if (it && userId != null && shippingId != null) {
                                 userProfileViewModel.setDefaultBillingAddress(userId, shippingId)
                             }
-                        })
-                        Text("Gleich wie Lieferadresse")
-                    }
-                    if (billingAddresses.isEmpty()) {
-                        Text("Keine Rechnungsadresse vorhanden.")
+                        },
+                        enabled = isCheckboxEnabled
+                    )
+                    if (isCheckboxChecked) {
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { userProfileViewModel.openAddBillingAddress() }) { Text("Andere Rechnungsadresse erstellen") }
                     } else {
-                        billingAddresses.forEach { (id, address) ->
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                                RadioButton(
-                                    selected = id == defaultBillingAddressId,
-                                    onClick = {
-                                        val currentUser = user
-                                        val userId = currentUser?.id
-                                        val billingId = id
-                                        if (userId != null) {
-                                            userProfileViewModel.setDefaultBillingAddress(userId, billingId)
+                        if (billingAddresses.isEmpty()) {
+                            Text("Keine Rechnungsadresse vorhanden.")
+                        } else {
+                            billingAddresses.forEach { (id, address) ->
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                    RadioButton(
+                                        selected = id == defaultBillingAddressId,
+                                        onClick = {
+                                            val currentUser = user
+                                            val userId = currentUser?.id
+                                            if (userId != null) {
+                                                userProfileViewModel.setDefaultBillingAddress(userId, id)
+                                            }
                                         }
+                                    )
+                                    Column(Modifier.weight(1f)) {
+                                        Text("Name: ${address.recipientFirstName} ${address.recipientLastName}")
+                                        Text("Straße: ${address.street} ${address.houseNumber}")
+                                        if (!address.addressAddition.isNullOrBlank()) Text("Zusatz: ${address.addressAddition}")
+                                        Text("PLZ: ${address.postalCode}")
+                                        Text("Stadt: ${address.city}")
+                                        Text("Land: ${address.country}")
                                     }
-                                )
-                                Column(Modifier.weight(1f)) {
-                                    Text("${address.recipientFirstName} ${address.recipientLastName}, ${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
-                                    if (!address.addressAddition.isNullOrBlank()) Text(address.addressAddition)
+                                    IconButton(onClick = { showEditDialog = id to true }) { Icon(Icons.Default.Edit, contentDescription = "Bearbeiten") }
+                                    IconButton(onClick = { showDeleteDialog = id to true }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
                                 }
-                                IconButton(onClick = {
-                                    val currentUser = user
-                                    val userId = currentUser?.id
-                                    if (userId != null) {
-                                        userProfileViewModel.deleteBillingAddress(userId, id)
-                                    }
-                                }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
                             }
                         }
                     }
@@ -305,8 +353,8 @@ fun ProfileScreen(
                         Column(Modifier.padding(24.dp).widthIn(min = 320.dp, max = 480.dp)) {
                             Text(if (isEdit) (if (isBilling) "Rechnungsadresse bearbeiten" else "Lieferadresse bearbeiten") else (if (isBilling) "Rechnungsadresse hinzufügen" else "Lieferadresse hinzufügen"), style = MaterialTheme.typography.titleLarge)
                             Spacer(Modifier.height(16.dp))
-                            OutlinedTextField(value = addressForm.recipientFirstName, onValueChange = { userProfileViewModel.setAddressFormField(street = it) }, label = { Text("Vorname") }, modifier = Modifier.fillMaxWidth())
-                            OutlinedTextField(value = addressForm.recipientLastName, onValueChange = { userProfileViewModel.setAddressFormField(houseNumber = it) }, label = { Text("Nachname") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.recipientFirstName, onValueChange = { userProfileViewModel.setAddressFormField(recipientFirstName = it) }, label = { Text("Vorname") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(value = addressForm.recipientLastName, onValueChange = { userProfileViewModel.setAddressFormField(recipientLastName = it) }, label = { Text("Nachname") }, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(value = addressForm.street, onValueChange = { userProfileViewModel.setAddressFormField(street = it) }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(value = addressForm.houseNumber, onValueChange = { userProfileViewModel.setAddressFormField(houseNumber = it) }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(value = addressForm.addressAddition ?: "", onValueChange = { userProfileViewModel.setAddressFormField(addressAddition = it) }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
@@ -331,52 +379,59 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (!isEditing) {
-                    Button(onClick = { isEditing = true }, modifier = Modifier.weight(1f)) {
-                        Text("Bearbeiten")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = { openDialog.value = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Account löschen")
-                    }
-                } else {
-                    Button(
-                        onClick = {
-                            val currentUser = user
-                            if (currentUser != null) {
-                                val updatedUser = currentUser.copy(
-                                    firstName = firstName,
-                                    lastName = lastName,
-                                    email = email,
-                                    phone = phone.takeIf { it.isNotBlank() },
-                                    mobile = mobile.takeIf { it.isNotBlank() }
-                                )
-                                userProfileViewModel.updateUser(updatedUser)
-                                isEditing = false
-                            }
-                        },
-                        enabled = !isSaving,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Speichern")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { isEditing = false }, modifier = Modifier.weight(1f)) {
-                        Text("Abbrechen")
-                    }
-                }
-            }
             if (errorMessage != null) {
                 Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
         }
+    }
+
+    // Bestätigungsdialoge:
+    if (showEditDialog != null) {
+        val (addressId, isBilling) = showEditDialog!!
+        AlertDialog(
+            onDismissRequest = { showEditDialog = null },
+            title = { Text("Adresse bearbeiten") },
+            text = { Text("Willst du diese Adresse wirklich bearbeiten?") },
+            confirmButton = {
+                Button(onClick = {
+                    if (isBilling) {
+                        val address = billingAddresses.find { it.first == addressId }?.second
+                        if (address != null) userProfileViewModel.openEditBillingAddress(addressId, address)
+                    } else {
+                        val address = shippingAddresses.find { it.first == addressId }?.second
+                        if (address != null) userProfileViewModel.openEditShippingAddress(addressId, address)
+                    }
+                    showEditDialog = null
+                }) { Text("Bearbeiten") }
+            },
+            dismissButton = {
+                Button(onClick = { showEditDialog = null }) { Text("Abbrechen") }
+            }
+        )
+    }
+    if (showDeleteDialog != null) {
+        val (addressId, isBilling) = showDeleteDialog!!
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            title = { Text("Adresse löschen") },
+            text = { Text("Willst du diese Adresse wirklich löschen?") },
+            confirmButton = {
+                Button(onClick = {
+                    val currentUser = user
+                    val userId = currentUser?.id
+                    if (userId != null) {
+                        if (isBilling) {
+                            userProfileViewModel.deleteBillingAddress(userId, addressId)
+                        } else {
+                            userProfileViewModel.deleteShippingAddress(userId, addressId)
+                        }
+                    }
+                    showDeleteDialog = null
+                }) { Text("Löschen") }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteDialog = null }) { Text("Abbrechen") }
+            }
+        )
     }
 }

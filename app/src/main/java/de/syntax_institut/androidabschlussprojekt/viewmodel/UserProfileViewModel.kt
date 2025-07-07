@@ -200,6 +200,8 @@ class UserProfileViewModel(
         _editAddressId.value = null
     }
     fun setAddressFormField(
+        recipientFirstName: String? = null,
+        recipientLastName: String? = null,
         street: String? = null,
         houseNumber: String? = null,
         addressAddition: String? = null,
@@ -208,6 +210,8 @@ class UserProfileViewModel(
         country: String? = null
     ) {
         _addressForm.value = _addressForm.value.copy(
+            recipientFirstName = recipientFirstName ?: _addressForm.value.recipientFirstName,
+            recipientLastName = recipientLastName ?: _addressForm.value.recipientLastName,
             street = street ?: _addressForm.value.street,
             houseNumber = houseNumber ?: _addressForm.value.houseNumber,
             addressAddition = addressAddition ?: _addressForm.value.addressAddition,
