@@ -74,30 +74,6 @@ class UserRepository {
         userDoc.delete().await()
     }
 
-    suspend fun addAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address) {
-        collection.document(userId)
-            .collection("addresses")
-            .add(address)
-            .await()
-    }
-
-    suspend fun getAddresses(userId: String): List<de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address> {
-        val snapshot = collection.document(userId).collection("addresses").get().await()
-        return snapshot.documents.mapNotNull { it.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address::class.java) }
-    }
-
-    suspend fun addPayment(userId: String, payment: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod) {
-        collection.document(userId)
-            .collection("payments")
-            .add(payment)
-            .await()
-    }
-
-    suspend fun getPayments(userId: String): List<de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod> {
-        val snapshot = collection.document(userId).collection("payments").get().await()
-        return snapshot.documents.mapNotNull { it.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java) }
-    }
-
     // Lieferadressen
     suspend fun addShippingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address): String {
         val docRef = collection.document(userId)
@@ -162,5 +138,17 @@ class UserRepository {
             .document(addressId)
             .delete()
             .await()
+    }
+
+    suspend fun addPayment(userId: String, payment: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod) {
+        collection.document(userId)
+            .collection("payments")
+            .add(payment)
+            .await()
+    }
+
+    suspend fun getPayments(userId: String): List<de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod> {
+        val snapshot = collection.document(userId).collection("payments").get().await()
+        return snapshot.documents.mapNotNull { it.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java) }
     }
 }

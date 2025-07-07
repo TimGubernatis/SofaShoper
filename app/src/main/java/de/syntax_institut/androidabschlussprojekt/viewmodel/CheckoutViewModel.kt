@@ -92,34 +92,46 @@ class CheckoutViewModel(
                 if (user != null && userRepository != null) {
 
                     val shippingId = userRepository.addShippingAddress(user.id!!, Address(
+                        recipientFirstName = _shippingAddress.value.recipientFirstName,
+                        recipientLastName = _shippingAddress.value.recipientLastName,
                         street = _shippingAddress.value.street,
-                        houseNumber = _shippingAddress.value.houseNumber ?: "",
+                        houseNumber = _shippingAddress.value.houseNumber,
                         addressAddition = _shippingAddress.value.addressAddition,
                         postalCode = _shippingAddress.value.postalCode,
                         city = _shippingAddress.value.city,
-                        country = _shippingAddress.value.country
+                        country = _shippingAddress.value.country,
+                        phone = _shippingAddress.value.phone,
+                        mobile = _shippingAddress.value.mobile
                     ))
 
 
                     val billing = billingAddress.value
                     val billingId = if (billing != null) {
                         userRepository.addBillingAddress(user.id!!, Address(
+                            recipientFirstName = billing.recipientFirstName,
+                            recipientLastName = billing.recipientLastName,
                             street = billing.street,
-                            houseNumber = billing.houseNumber ?: "",
+                            houseNumber = billing.houseNumber,
                             addressAddition = billing.addressAddition,
                             postalCode = billing.postalCode,
                             city = billing.city,
-                            country = billing.country
+                            country = billing.country,
+                            phone = billing.phone,
+                            mobile = billing.mobile
                         ))
                     } else {
 
                         userRepository.addBillingAddress(user.id!!, Address(
+                            recipientFirstName = _shippingAddress.value.recipientFirstName,
+                            recipientLastName = _shippingAddress.value.recipientLastName,
                             street = _shippingAddress.value.street,
-                            houseNumber = _shippingAddress.value.houseNumber ?: "",
+                            houseNumber = _shippingAddress.value.houseNumber,
                             addressAddition = _shippingAddress.value.addressAddition,
                             postalCode = _shippingAddress.value.postalCode,
                             city = _shippingAddress.value.city,
-                            country = _shippingAddress.value.country
+                            country = _shippingAddress.value.country,
+                            phone = _shippingAddress.value.phone,
+                            mobile = _shippingAddress.value.mobile
                         ))
                     }
 

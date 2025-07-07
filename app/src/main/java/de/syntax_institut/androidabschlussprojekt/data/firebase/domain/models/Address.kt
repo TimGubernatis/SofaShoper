@@ -1,5 +1,6 @@
 package de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models
 
+// Address-Modell für Liefer- und Rechnungsadressen (Firestore: Subcollections)
 data class Address(
     val recipientFirstName: String = "",
     val recipientLastName: String = "",

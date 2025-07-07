@@ -1,5 +1,6 @@
 package de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models
 
+// User-Modell für Account-Daten (Firestore: users-Collection)
 data class User(
     val id: String? = null,
     val email: String = "",
