@@ -1,6 +1,7 @@
 package de.syntax_institut.androidabschlussprojekt.data.model
 
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 
 data class Order(
     val id: String = generateOrderId(),
@@ -24,11 +25,4 @@ enum class OrderStatus {
     SHIPPED,
     DELIVERED,
     CANCELLED
-}
-
-enum class PaymentMethod {
-    CREDIT_CARD,
-    PAYPAL,
-    BANK_TRANSFER,
-    CASH_ON_DELIVERY
 } 

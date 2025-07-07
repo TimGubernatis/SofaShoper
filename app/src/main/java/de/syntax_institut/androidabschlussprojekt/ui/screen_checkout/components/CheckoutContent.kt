@@ -8,15 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import de.syntax_institut.androidabschlussprojekt.data.model.CartItem
-import de.syntax_institut.androidabschlussprojekt.data.model.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
@@ -24,7 +23,6 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
 import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
-import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
@@ -34,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun CheckoutContent(

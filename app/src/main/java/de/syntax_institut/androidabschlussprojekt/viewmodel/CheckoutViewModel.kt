@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User
-import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod as FirebasePaymentMethod
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 
@@ -137,13 +137,7 @@ class CheckoutViewModel(
 
 
                     _selectedPaymentMethod.value?.let { pm ->
-                        val payment = when (pm) {
-                            PaymentMethod.PAYPAL -> FirebasePaymentMethod.paypal("")
-                            PaymentMethod.BANK_TRANSFER -> FirebasePaymentMethod.iban("")
-                            PaymentMethod.CREDIT_CARD -> FirebasePaymentMethod(type = "CREDIT_CARD")
-                            PaymentMethod.CASH_ON_DELIVERY -> FirebasePaymentMethod(type = "CASH_ON_DELIVERY")
-                        }
-                        userRepository.addPayment(user.id!!, payment)
+                        userRepository.addPayment(user.id!!, pm)
                     }
                 }
                 

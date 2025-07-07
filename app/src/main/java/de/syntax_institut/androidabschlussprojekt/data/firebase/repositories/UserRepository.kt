@@ -149,7 +149,22 @@ class UserRepository {
 
     suspend fun getPayments(userId: String): List<de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod> {
         val snapshot = collection.document(userId).collection("payments").get().await()
-        return snapshot.documents.mapNotNull { it.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java) }
+        return snapshot.documents.mapNotNull { doc ->
+            try {
+                // Versuche zuerst den Standard-Deserializer
+                doc.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java)
+            } catch (e: Exception) {
+                // Fallback: Custom Deserializer für alte Daten
+                try {
+                    val data = doc.data
+                    if (data != null) {
+                        de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod.fromMap(data)
+                    } else null
+                } catch (e2: Exception) {
+                    null
+                }
+            }
+        }
     }
 
     suspend fun setDefaultShippingAddress(userId: String, addressId: String) {

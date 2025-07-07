@@ -9,6 +9,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType
 
 @Composable
 fun UserRegistrationScreen(
@@ -36,7 +37,7 @@ fun UserRegistrationScreen(
     var billingCity by remember { mutableStateOf("") }
     var billingCountry by remember { mutableStateOf("DE") }
 
-    var paymentMethodType by remember { mutableStateOf("None") }
+    var paymentMethod by remember { mutableStateOf(PaymentMethod.none()) }
     var paypalEmail by remember { mutableStateOf("") }
     var iban by remember { mutableStateOf("") }
 
@@ -175,12 +176,12 @@ fun UserRegistrationScreen(
         Text("Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
 
         DropdownMenuDemo(
-            selectedMethod = paymentMethodType,
-            onMethodSelected = { paymentMethodType = it }
+            selectedMethod = paymentMethod,
+            onMethodSelected = { paymentMethod = it }
         )
 
-        when (paymentMethodType) {
-            "PayPal" -> {
+        when (paymentMethod.type) {
+            PaymentMethodType.PAYPAL -> {
                 OutlinedTextField(
                     value = paypalEmail,
                     onValueChange = { paypalEmail = it },
@@ -189,7 +190,19 @@ fun UserRegistrationScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            "IBAN" -> {
+            PaymentMethodType.ABBUCHUNG -> {
+                // No additional fields needed for this payment method
+            }
+            PaymentMethodType.NACHNAHME -> {
+                // No additional fields needed for this payment method
+            }
+            PaymentMethodType.VISA -> {
+                // No additional fields needed for this payment method
+            }
+            PaymentMethodType.AMAZON_PAY -> {
+                // No additional fields needed for this payment method
+            }
+            PaymentMethodType.UEBERWEISUNG -> {
                 OutlinedTextField(
                     value = iban,
                     onValueChange = { iban = it },
@@ -198,6 +211,15 @@ fun UserRegistrationScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
+
+        paymentMethod = when (paymentMethod.type) {
+            PaymentMethodType.PAYPAL -> paymentMethod.copy(email = paypalEmail)
+            PaymentMethodType.ABBUCHUNG -> paymentMethod
+            PaymentMethodType.NACHNAHME -> paymentMethod
+            PaymentMethodType.VISA -> paymentMethod
+            PaymentMethodType.AMAZON_PAY -> paymentMethod
+            PaymentMethodType.UEBERWEISUNG -> paymentMethod.copy(iban = iban)
         }
 
         Button(
@@ -238,11 +260,7 @@ fun UserRegistrationScreen(
                             country = billingCountry
                         )
                     },
-                    paymentMethod = when (paymentMethodType) {
-                        "PayPal" -> PaymentMethod.paypal(paypalEmail)
-                        "IBAN" -> PaymentMethod.iban(iban)
-                        else -> PaymentMethod.none()
-                    }
+                    paymentMethod = paymentMethod
                 )
                 onRegisterClick(userInput)
             },

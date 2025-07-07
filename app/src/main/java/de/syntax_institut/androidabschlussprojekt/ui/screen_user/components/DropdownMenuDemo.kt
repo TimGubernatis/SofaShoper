@@ -7,16 +7,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType
+import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 
 @Composable
 fun DropdownMenuDemo(
-    selectedMethod: String,
-    onMethodSelected: (String) -> Unit
+    selectedMethod: PaymentMethod,
+    onMethodSelected: (PaymentMethod) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         Text(
-            text = selectedMethod,
+            text = when (selectedMethod.type) {
+                PaymentMethodType.PAYPAL -> "PayPal"
+                PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                PaymentMethodType.NACHNAHME -> "Nachnahme"
+                PaymentMethodType.VISA -> "Visa"
+                PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+            },
             modifier = Modifier
                 .clickable { expanded = true }
                 .padding(8.dp),
@@ -26,27 +35,32 @@ fun DropdownMenuDemo(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                text = { Text("None") },
-                onClick = {
-                    onMethodSelected("None")
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("PayPal") },
-                onClick = {
-                    onMethodSelected("PayPal")
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("IBAN") },
-                onClick = {
-                    onMethodSelected("IBAN")
-                    expanded = false
-                }
-            )
+            PaymentMethodType.values().forEach { methodType ->
+                DropdownMenuItem(
+                    text = { 
+                        Text(when (methodType) {
+                            PaymentMethodType.PAYPAL -> "PayPal"
+                            PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                            PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                            PaymentMethodType.NACHNAHME -> "Nachnahme"
+                            PaymentMethodType.VISA -> "Visa"
+                            PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                        })
+                    },
+                    onClick = {
+                        val paymentMethod = when (methodType) {
+                            PaymentMethodType.PAYPAL -> PaymentMethod.paypal("")
+                            PaymentMethodType.ABBUCHUNG -> PaymentMethod.none()
+                            PaymentMethodType.NACHNAHME -> PaymentMethod.cashOnDelivery()
+                            PaymentMethodType.VISA -> PaymentMethod.visa()
+                            PaymentMethodType.AMAZON_PAY -> PaymentMethod.amazonPay()
+                            PaymentMethodType.UEBERWEISUNG -> PaymentMethod.bankTransfer()
+                        }
+                        onMethodSelected(paymentMethod)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

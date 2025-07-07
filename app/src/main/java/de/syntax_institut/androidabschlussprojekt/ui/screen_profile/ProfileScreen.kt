@@ -303,13 +303,16 @@ fun ProfileScreen(
                     Text("Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     if (defaultPayment != null) {
-                        Text("Typ: ${defaultPayment.type}")
-                        when (defaultPayment.type) {
-                            "PayPal" -> Text("PayPal: ${defaultPayment.email}")
-                            "IBAN" -> Text("IBAN: ${defaultPayment.iban}")
-                            "CREDIT_CARD" -> Text("Kreditkarte")
-                            "CASH_ON_DELIVERY" -> Text("Nachnahme")
-                        }
+                        Text("Typ: " + when (defaultPayment.type) {
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.PAYPAL -> "PayPal"
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.NACHNAHME -> "Nachnahme"
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.VISA -> "Visa"
+                            de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                        })
+                        if (defaultPayment.email.isNotBlank()) Text("PayPal: ${defaultPayment.email}")
+                        if (defaultPayment.iban.isNotBlank()) Text("IBAN: ${defaultPayment.iban}")
                     } else {
                         Text("Keine Standard-Zahlungsart ausgewählt.")
                     }
@@ -330,13 +333,16 @@ fun ProfileScreen(
                                 onClick = { userProfileViewModel.setDefaultPaymentMethod(id) }
                             )
                             Column(Modifier.weight(1f)) {
-                                Text("Typ: ${payment.type}")
-                                when (payment.type) {
-                                    "PayPal" -> Text("PayPal: ${payment.email}")
-                                    "IBAN" -> Text("IBAN: ${payment.iban}")
-                                    "CREDIT_CARD" -> Text("Kreditkarte")
-                                    "CASH_ON_DELIVERY" -> Text("Nachnahme")
-                                }
+                                Text("Typ: " + when (payment.type) {
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.PAYPAL -> "PayPal"
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.NACHNAHME -> "Nachnahme"
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.VISA -> "Visa"
+                                    de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                                })
+                                if (payment.email.isNotBlank()) Text("PayPal: ${payment.email}")
+                                if (payment.iban.isNotBlank()) Text("IBAN: ${payment.iban}")
                             }
                             IconButton(onClick = { userProfileViewModel.deletePayment(user!!.id!!, id) }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
                         }
