@@ -31,7 +31,6 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveImageHeight
 import de.syntax_institut.androidabschlussprojekt.util.isTablet
-import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import de.syntax_institut.androidabschlussprojekt.util.responsiveCornerRadius
 import de.syntax_institut.androidabschlussprojekt.util.responsiveElevation
@@ -59,9 +58,7 @@ fun ProductCard(
     isFavorite: Boolean = false,
     onFavoriteClick: (() -> Unit)? = null,
     onLoginRequired: (() -> Unit)? = null,
-    cartTotal: Double = 0.0,
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    cartTotal: Double = 0.0
 ) {
     val context: Context = LocalContext.current
     val buttonColor by animateColorAsState(
@@ -163,13 +160,6 @@ fun ProductCard(
                         onClick = {
                             animateAdd = true
                             onAddToCart()
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "Produkt zum Warenkorb hinzugefügt\nWarenkorb: ${formatPrice(cartTotal + product.price)}",
-                                    withDismissAction = true,
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
                         },
                         modifier = Modifier
                             .scale(scale)
@@ -186,12 +176,6 @@ fun ProductCard(
                             modifier = Modifier.size(responsiveIconSize())
                         )
 
-                    }
-                    LaunchedEffect(animateAdd) {
-                        if (animateAdd) {
-                            kotlinx.coroutines.delay(180)
-                            animateAdd = false
-                        }
                     }
                 }
             }
@@ -215,33 +199,6 @@ fun ProductCard(
                     }
                 }
             )
-        }
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                Snackbar(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    shape = RoundedCornerShape(16.dp),
-                    action = {
-                        TextButton(onClick = { data.dismiss() }) {
-                            Text("Schließen")
-                        }
-                    }
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = null,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("Produkt zum Warenkorb hinzugefügt", style = MaterialTheme.typography.bodyMedium)
-                            Text("Warenkorb: ${formatPrice(cartTotal + product.price)}", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-            }
         }
     }
 }

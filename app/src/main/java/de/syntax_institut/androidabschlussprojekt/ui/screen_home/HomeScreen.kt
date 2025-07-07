@@ -71,14 +71,14 @@ fun HomeScreen(
         }
     }
 
-    // Callback für ProductCard
+
     fun onProductAddedToCart(productName: String, productPrice: Double) {
         pendingProductName = productName
         bottomBarTotal += productPrice
         bottomBarCount += 1
     }
 
-    // Wenn der Warenkorb geleert wird, setze bottomBarTotal und bottomBarCount zurück
+
     LaunchedEffect(cartItems) {
         if (cartItems.isEmpty()) {
             bottomBarTotal = 0.0
@@ -86,7 +86,7 @@ fun HomeScreen(
         }
     }
 
-    // Zeige BottomBar erst, wenn cartTotal/cartItems nach dem Hinzufügen aktualisiert sind
+
     LaunchedEffect(cartTotal, cartItems) {
         if (pendingProductName != null) {
             showCartBar = true
