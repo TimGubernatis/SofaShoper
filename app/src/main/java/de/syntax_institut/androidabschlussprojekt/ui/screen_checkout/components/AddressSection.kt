@@ -15,6 +15,7 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
+import de.syntax_institut.androidabschlussprojekt.ui.components.CountryPicker
 
 @Composable
 fun AddressSection(
@@ -104,6 +105,14 @@ fun AddressSection(
                 value = address.phone ?: "",
                 onValueChange = { onAddressChange(address.copy(phone = it)) },
                 label = { Text(responsiveLabel("Telefon (optional)", "Tel.")) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            
+            CountryPicker(
+                value = address.country,
+                onValueChange = { onAddressChange(address.copy(country = it)) },
                 modifier = Modifier.fillMaxWidth()
             )
         }

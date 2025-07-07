@@ -32,6 +32,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.
 import androidx.compose.ui.res.painterResource
 import de.syntax_institut.androidabschlussprojekt.R
 import androidx.compose.ui.res.stringResource
+import de.syntax_institut.androidabschlussprojekt.ui.components.CountryPicker
 
 
 @Composable
@@ -457,7 +458,11 @@ fun ProfileScreen(
                             OutlinedTextField(value = addressForm.addressAddition ?: "", onValueChange = { userProfileViewModel.setAddressFormField(addressAddition = it) }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(value = addressForm.postalCode, onValueChange = { userProfileViewModel.setAddressFormField(postalCode = it) }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(value = addressForm.city, onValueChange = { userProfileViewModel.setAddressFormField(city = it) }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
-                            OutlinedTextField(value = addressForm.country, onValueChange = { userProfileViewModel.setAddressFormField(country = it) }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
+                            CountryPicker(
+                                value = addressForm.country,
+                                onValueChange = { userProfileViewModel.setAddressFormField(country = it) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                             Spacer(Modifier.height(16.dp))
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                                 Button(onClick = { userProfileViewModel.closeAddressDialog() }) { Text("Abbrechen") }

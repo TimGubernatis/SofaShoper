@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import de.syntax_institut.androidabschlussprojekt.ui.components.CountryPicker
 
 @Composable
 fun AddressFields(
@@ -62,10 +63,9 @@ fun AddressFields(
         modifier = Modifier.fillMaxWidth()
     )
     Spacer(Modifier.height(8.dp))
-    OutlinedTextField(
+    CountryPicker(
         value = country,
         onValueChange = onCountryChange,
-        label = { Text("Land") },
         modifier = Modifier.fillMaxWidth()
     )
 }
