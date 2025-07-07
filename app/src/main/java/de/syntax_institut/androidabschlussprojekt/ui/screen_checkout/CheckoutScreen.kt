@@ -92,14 +92,8 @@ fun CheckoutScreen(
     }
 
     LaunchedEffect(user) {
-        user?.let {
-            checkoutViewModel.prefillFromUser(it)
-            email = it.email
-        }
-    }
-
-    LaunchedEffect(user) {
         user?.id?.let { checkoutViewModel.loadAddresses(it) }
+        email = user?.email ?: ""
     }
 
     Scaffold(
@@ -196,7 +190,18 @@ fun CheckoutScreen(
                                     password,
                                     shippingAddress.firstName,
                                     shippingAddress.lastName
-                                )
+                                ) { newUser ->
+                                    if (adoptShippingChanges) {
+                                        checkoutViewModel.saveAndSelectShippingAddress(newUser.id!!, shippingAddress)
+                                    }
+                                    if (adoptBillingChanges && useBillingAddress) {
+                                        billingAddress?.let { safeBillingAddress ->
+                                            checkoutViewModel.saveAndSelectBillingAddress(newUser.id!!, safeBillingAddress)
+                                        }
+                                    }
+                                    checkoutViewModel.placeOrder()
+                                }
+                                return@CheckoutContent
                             }
                         }
                         user?.let { user ->

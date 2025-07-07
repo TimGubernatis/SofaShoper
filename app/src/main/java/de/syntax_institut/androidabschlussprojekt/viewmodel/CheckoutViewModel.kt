@@ -89,11 +89,10 @@ class CheckoutViewModel(
                     paymentMethod = _selectedPaymentMethod.value
                 )
                 
-                // User-Daten in Firebase speichern, falls eingeloggt
                 val user = authViewModel?.user?.value
                 if (user != null && userRepository != null) {
-                    // Versandadresse speichern
-                    userRepository.addAddress(user.id!!, Address(
+
+                    val shippingId = userRepository.addShippingAddress(user.id!!, Address(
                         street = _shippingAddress.value.street,
                         houseNumber = _shippingAddress.value.houseNumber ?: "",
                         addressAddition = _shippingAddress.value.addressAddition,
@@ -101,9 +100,11 @@ class CheckoutViewModel(
                         city = _shippingAddress.value.city,
                         country = _shippingAddress.value.country
                     ))
-                    // Rechnungsadresse speichern, falls vorhanden
-                    billingAddress.value?.let { billing ->
-                        userRepository.addAddress(user.id!!, Address(
+
+
+                    val billing = billingAddress.value
+                    val billingId = if (billing != null) {
+                        userRepository.addBillingAddress(user.id!!, Address(
                             street = billing.street,
                             houseNumber = billing.houseNumber ?: "",
                             addressAddition = billing.addressAddition,
@@ -111,8 +112,19 @@ class CheckoutViewModel(
                             city = billing.city,
                             country = billing.country
                         ))
+                    } else {
+
+                        userRepository.addBillingAddress(user.id!!, Address(
+                            street = _shippingAddress.value.street,
+                            houseNumber = _shippingAddress.value.houseNumber ?: "",
+                            addressAddition = _shippingAddress.value.addressAddition,
+                            postalCode = _shippingAddress.value.postalCode,
+                            city = _shippingAddress.value.city,
+                            country = _shippingAddress.value.country
+                        ))
                     }
-                    // Zahlungsart speichern
+
+
                     _selectedPaymentMethod.value?.let { pm ->
                         val payment = when (pm) {
                             PaymentMethod.PAYPAL -> FirebasePaymentMethod.paypal("")
@@ -139,39 +151,10 @@ class CheckoutViewModel(
         _selectedPaymentMethod.value = null
     }
     
-    fun prefillFromUser(user: User) {
-        _shippingAddress.value = ShippingAddress(
-            firstName = user.firstName,
-            lastName = user.lastName,
-            street = user.shippingAddress.street,
-            city = user.shippingAddress.city,
-            postalCode = user.shippingAddress.postalCode,
-            country = user.shippingAddress.country,
-            phone = user.phone
-        )
-        _selectedPaymentMethod.value = when (user.paymentMethod?.type) {
-            "PayPal" -> PaymentMethod.PAYPAL
-            "IBAN" -> PaymentMethod.BANK_TRANSFER
-            "CREDIT_CARD" -> PaymentMethod.CREDIT_CARD
-            "CASH_ON_DELIVERY" -> PaymentMethod.CASH_ON_DELIVERY
-            else -> null
-        }
-    }
-
     fun loadAddresses(userId: String) {
         viewModelScope.launch {
             _shippingAddresses.value = userRepository?.getShippingAddresses(userId) ?: emptyList()
             _billingAddresses.value = userRepository?.getBillingAddresses(userId) ?: emptyList()
-            val user = userRepository?.getUser(userId)
-            _selectedShippingAddressId.value = user?.defaultShippingAddressId
-            _selectedBillingAddressId.value = user?.defaultBillingAddressId
-            // Setze initial die Adressen im State
-            _shippingAddresses.value.find { it.first == user?.defaultShippingAddressId }?.second?.let {
-                _shippingAddress.value = it.toShippingAddress(user)
-            }
-            _billingAddresses.value.find { it.first == user?.defaultBillingAddressId }?.second?.let {
-                _billingAddress.value = it.toShippingAddress(user)
-            }
         }
     }
 
@@ -198,7 +181,6 @@ class CheckoutViewModel(
                 country = address.country
             ))
             if (newId != null) {
-                userRepository.setDefaultShippingAddress(userId, newId)
                 loadAddresses(userId)
                 selectShippingAddress(newId)
             }
@@ -216,14 +198,13 @@ class CheckoutViewModel(
                 country = address.country
             ))
             if (newId != null) {
-                userRepository.setDefaultBillingAddress(userId, newId)
                 loadAddresses(userId)
                 selectBillingAddress(newId)
             }
         }
     }
 
-    // Hilfsfunktion zur Konvertierung Address -> ShippingAddress
+
     private fun Address.toShippingAddress(user: User?): ShippingAddress {
         return ShippingAddress(
             firstName = user?.firstName ?: "",

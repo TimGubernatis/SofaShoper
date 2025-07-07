@@ -59,12 +59,15 @@ class AuthViewModel(
             try {
                 val firebaseUser: FirebaseUser? = signInWithGoogleUseCase(idToken)
                 firebaseUser?.let {
-                    val user = User(
-                        id = it.uid,
-                        email = it.email ?: "",
-                        displayName = it.displayName
-                    )
-                    userRepository.saveUser(user)
+                    var user = userRepository.getUser(it.uid)
+                    if (user == null) {
+                        user = User(
+                            id = it.uid,
+                            email = it.email ?: "",
+                            displayName = it.displayName
+                        )
+                        userRepository.saveUser(user)
+                    }
                     _user.value = user
                 }
             } catch (e: Exception) {
@@ -88,7 +91,15 @@ class AuthViewModel(
                 auth.signInWithEmailAndPassword(email, password).await()
                 val currentUser = auth.currentUser
                 currentUser?.let {
-                    val user = userRepository.getUser(it.uid)
+                    var user = userRepository.getUser(it.uid)
+                    if (user == null) {
+                        user = User(
+                            id = it.uid,
+                            email = it.email ?: "",
+                            displayName = it.displayName
+                        )
+                        userRepository.saveUser(user)
+                    }
                     _user.value = user
                 }
             } catch (e: FirebaseAuthInvalidUserException) {
@@ -108,7 +119,7 @@ class AuthViewModel(
         }
     }
 
-    fun register(email: String, password: String, firstName: String = "", lastName: String = "", displayName: String? = null) {
+    fun register(email: String, password: String, firstName: String = "", lastName: String = "", displayName: String? = null, onSuccess: ((User) -> Unit)? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
@@ -126,6 +137,7 @@ class AuthViewModel(
                     )
                     userRepository.saveUser(user)
                     _user.value = user
+                    onSuccess?.invoke(user)
                 }
             } catch (e: FirebaseAuthWeakPasswordException) {
                 _errorMessage.value = "Passwort zu schwach. Bitte verwenden Sie mindestens 6 Zeichen."
@@ -167,6 +179,25 @@ class AuthViewModel(
             try {
                 FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
             } catch (e: Exception) {
+            }
+        }
+    }
+
+    fun deleteAccount() {
+        viewModelScope.launch {
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            val userId = user?.uid
+            if (user != null && userId != null) {
+                try {
+                    // 1. Firestore-Daten löschen
+                    userRepository.deleteUserCompletely(userId)
+                    // 2. Auth-Account löschen
+                    user.delete().await()
+                    // 3. State zurücksetzen/ausloggen
+                    signOut()
+                } catch (e: Exception) {
+                    _errorMessage.value = "Fehler beim Löschen des Accounts: ${e.message}"
+                }
             }
         }
     }

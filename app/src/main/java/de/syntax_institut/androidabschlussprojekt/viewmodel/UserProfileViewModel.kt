@@ -9,11 +9,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
+import kotlinx.coroutines.tasks.await
 
 class UserProfileViewModel(
     val authViewModel: AuthViewModel,
     private val userRepository: UserRepository
 ) : ViewModel() {
+
+    private val firestore = FirebaseFirestore.getInstance()
 
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
@@ -33,13 +38,7 @@ class UserProfileViewModel(
     private val _billingAddresses = MutableStateFlow<List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>>>(emptyList())
     val billingAddresses: StateFlow<List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address>>> = _billingAddresses
 
-    private val _defaultShippingAddressId = MutableStateFlow<String?>(null)
-    val defaultShippingAddressId: StateFlow<String?> = _defaultShippingAddressId
 
-    private val _defaultBillingAddressId = MutableStateFlow<String?>(null)
-    val defaultBillingAddressId: StateFlow<String?> = _defaultBillingAddressId
-
-    // --- Dialog- und Formular-Logik für Adressen (MVVM) ---
     enum class AddressDialogType { NONE, ADD_SHIPPING, EDIT_SHIPPING, ADD_BILLING, EDIT_BILLING }
     private val _addressDialogType = MutableStateFlow(AddressDialogType.NONE)
     val addressDialogType: StateFlow<AddressDialogType> = _addressDialogType
@@ -49,6 +48,11 @@ class UserProfileViewModel(
 
     private val _editAddressId = MutableStateFlow<String?>(null)
     val editAddressId: StateFlow<String?> = _editAddressId
+
+    private val _paymentMethods = MutableStateFlow<List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod>>>(emptyList())
+    val paymentMethods: StateFlow<List<Pair<String, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod>>> = _paymentMethods
+    private val _defaultPaymentMethodId = MutableStateFlow<String?>(null)
+    val defaultPaymentMethodId: StateFlow<String?> = _defaultPaymentMethodId
 
     init {
         viewModelScope.launch {
@@ -85,13 +89,9 @@ class UserProfileViewModel(
 
     fun deleteUserAccount() {
         viewModelScope.launch {
-            val userId = user.value?.id ?: return@launch
             try {
-                userRepository.deleteUserCompletely(userId)
-                val firebaseUser = FirebaseAuth.getInstance().currentUser
-                firebaseUser?.delete()?.addOnCompleteListener { task ->
-                    _accountDeleted.value = task.isSuccessful
-                }
+                authViewModel.deleteAccount()
+                _accountDeleted.value = true
             } catch (e: Exception) {
                 _accountDeleted.value = false
             }
@@ -102,17 +102,13 @@ class UserProfileViewModel(
         viewModelScope.launch {
             _shippingAddresses.value = userRepository.getShippingAddresses(userId)
             _billingAddresses.value = userRepository.getBillingAddresses(userId)
-            val user = userRepository.getUser(userId)
-            _defaultShippingAddressId.value = user?.defaultShippingAddressId
-            _defaultBillingAddressId.value = user?.defaultBillingAddressId
         }
     }
 
     fun addShippingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address) {
         viewModelScope.launch {
-            val id = userRepository.addShippingAddress(userId, address)
+            userRepository.addShippingAddress(userId, address)
             loadAddresses(userId)
-            setDefaultShippingAddress(userId, id)
         }
     }
 
@@ -130,18 +126,10 @@ class UserProfileViewModel(
         }
     }
 
-    fun setDefaultShippingAddress(userId: String, addressId: String) {
-        viewModelScope.launch {
-            userRepository.setDefaultShippingAddress(userId, addressId)
-            _defaultShippingAddressId.value = addressId
-        }
-    }
-
     fun addBillingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address) {
         viewModelScope.launch {
-            val id = userRepository.addBillingAddress(userId, address)
+            userRepository.addBillingAddress(userId, address)
             loadAddresses(userId)
-            setDefaultBillingAddress(userId, id)
         }
     }
 
@@ -156,13 +144,6 @@ class UserProfileViewModel(
         viewModelScope.launch {
             userRepository.deleteBillingAddress(userId, addressId)
             loadAddresses(userId)
-        }
-    }
-
-    fun setDefaultBillingAddress(userId: String, addressId: String) {
-        viewModelScope.launch {
-            userRepository.setDefaultBillingAddress(userId, addressId)
-            _defaultBillingAddressId.value = addressId
         }
     }
 
@@ -224,5 +205,44 @@ class UserProfileViewModel(
     fun validateAddress(): Boolean {
         val a = _addressForm.value
         return a.street.isNotBlank() && a.houseNumber.isNotBlank() && a.postalCode.isNotBlank() && a.city.isNotBlank() && a.country.isNotBlank()
+    }
+
+    fun loadPayments(userId: String) {
+        viewModelScope.launch {
+            val snapshot = userRepository.getPayments(userId)
+            val paymentDocs = firestore.collection("users").document(userId).collection("payments").get().await().documents
+            _paymentMethods.value = paymentDocs.mapNotNull { doc ->
+                val payment = doc.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java)
+                if (payment != null) Pair(doc.id, payment) else null
+            }
+            if (_defaultPaymentMethodId.value == null && _paymentMethods.value.isNotEmpty()) {
+                _defaultPaymentMethodId.value = _paymentMethods.value.first().first
+            }
+        }
+    }
+
+    fun addPayment(userId: String, payment: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod) {
+        viewModelScope.launch {
+            userRepository.addPayment(userId, payment)
+            loadPayments(userId)
+        }
+    }
+
+    fun updatePayment(userId: String, paymentId: String, payment: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod) {
+        viewModelScope.launch {
+            firestore.collection("users").document(userId).collection("payments").document(paymentId).set(payment).await()
+            loadPayments(userId)
+        }
+    }
+
+    fun deletePayment(userId: String, paymentId: String) {
+        viewModelScope.launch {
+            firestore.collection("users").document(userId).collection("payments").document(paymentId).delete().await()
+            loadPayments(userId)
+        }
+    }
+
+    fun setDefaultPaymentMethod(paymentId: String) {
+        _defaultPaymentMethodId.value = paymentId
     }
 }

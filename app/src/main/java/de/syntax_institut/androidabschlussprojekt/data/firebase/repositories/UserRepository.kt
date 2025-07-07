@@ -15,12 +15,7 @@ class UserRepository {
     private val collection = db.collection("users")
 
     suspend fun saveUser(user: User) {
-        val userMap = mapOf(
-            "id" to user.id,
-            "email" to user.email,
-            "firstName" to user.firstName,
-            "lastName" to user.lastName
-        )
+        val userMap = de.syntax_institut.androidabschlussprojekt.data.firebase.domain.mappers.FirebaseAuthUserMapper.toMap(user)
         collection.document(user.id!!).set(userMap).await()
     }
 
@@ -136,10 +131,6 @@ class UserRepository {
             .await()
     }
 
-    suspend fun setDefaultShippingAddress(userId: String, addressId: String) {
-        collection.document(userId).update("defaultShippingAddressId", addressId).await()
-    }
-
     // Rechnungsadressen
     suspend fun addBillingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address): String {
         val docRef = collection.document(userId)
@@ -171,9 +162,5 @@ class UserRepository {
             .document(addressId)
             .delete()
             .await()
-    }
-
-    suspend fun setDefaultBillingAddress(userId: String, addressId: String) {
-        collection.document(userId).update("defaultBillingAddressId", addressId).await()
     }
 }

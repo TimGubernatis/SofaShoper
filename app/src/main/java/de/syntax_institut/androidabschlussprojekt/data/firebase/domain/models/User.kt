@@ -7,19 +7,7 @@ data class User(
     val lastName: String = "",
     val displayName: String? = null,
     val phone: String? = null,
-    val mobile: String? = null,
-
-    val shippingAddress: Address = Address(),
-    val billingAddress: Address = Address(),
-
-    val paymentMethod: PaymentMethod? = null,
-
-    val favorites: List<String> = emptyList(),
-
-    val orderHistory: List<Order> = emptyList(),
-
-    val defaultShippingAddressId: String? = null,
-    val defaultBillingAddressId: String? = null
+    val mobile: String? = null
 )
 
 data class Address(

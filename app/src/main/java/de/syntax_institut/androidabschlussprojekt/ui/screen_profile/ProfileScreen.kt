@@ -13,14 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.*
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressFields
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.PaymentMethodSelector
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.style.TextOverflow
+
 
 @Composable
 fun ProfileScreen(
@@ -40,6 +42,11 @@ fun ProfileScreen(
     val addressDialogType by userProfileViewModel.addressDialogType.collectAsState()
     val addressForm by userProfileViewModel.addressForm.collectAsState()
     val editAddressId by userProfileViewModel.editAddressId.collectAsState()
+
+    // Zahlungsarten laden
+    val paymentMethods by userProfileViewModel.paymentMethods.collectAsState()
+    val defaultPaymentMethodId by userProfileViewModel.defaultPaymentMethodId.collectAsState()
+    val defaultPayment = paymentMethods.find { it.first == defaultPaymentMethodId }?.second
 
     LaunchedEffect(user, isSigningOut) {
         if (user != null) {
@@ -98,35 +105,19 @@ fun ProfileScreen(
     var phone by remember { mutableStateOf(user?.phone ?: "") }
     var mobile by remember { mutableStateOf(user?.mobile ?: "") }
 
-    var street by remember { mutableStateOf(user?.shippingAddress?.street ?: "") }
-    var houseNumber by remember { mutableStateOf(user?.shippingAddress?.houseNumber ?: "") }
-    var addressAddition by remember { mutableStateOf(user?.shippingAddress?.addressAddition ?: "") }
-    var postalCode by remember { mutableStateOf(user?.shippingAddress?.postalCode ?: "") }
-    var city by remember { mutableStateOf(user?.shippingAddress?.city ?: "") }
-    var country by remember { mutableStateOf(user?.shippingAddress?.country ?: "DE") }
 
-    var billingStreet by remember { mutableStateOf(user?.billingAddress?.street ?: "") }
-    var billingHouseNumber by remember { mutableStateOf(user?.billingAddress?.houseNumber ?: "") }
-    var billingAddressAddition by remember { mutableStateOf(user?.billingAddress?.addressAddition ?: "") }
-    var billingPostalCode by remember { mutableStateOf(user?.billingAddress?.postalCode ?: "") }
-    var billingCity by remember { mutableStateOf(user?.billingAddress?.city ?: "") }
-    var billingCountry by remember { mutableStateOf(user?.billingAddress?.country ?: "DE") }
-
-    var paymentMethodType by remember { mutableStateOf(user?.paymentMethod?.type ?: "None") }
-    var paypalEmail by remember { mutableStateOf(user?.paymentMethod?.email ?: "") }
-    var ibanNumber by remember { mutableStateOf(user?.paymentMethod?.iban ?: "") }
-
-    val scrollState = rememberScrollState()
-
-    // Adresslisten laden, wenn User geladen
     LaunchedEffect(user) {
-        user?.id?.let { userProfileViewModel.loadAddresses(it) }
+        user?.id?.let {
+            userProfileViewModel.loadAddresses(it)
+            userProfileViewModel.loadPayments(it)
+        }
     }
-
     val shippingAddresses by userProfileViewModel.shippingAddresses.collectAsState()
     val billingAddresses by userProfileViewModel.billingAddresses.collectAsState()
-    val defaultShippingAddressId by userProfileViewModel.defaultShippingAddressId.collectAsState()
-    val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
+    val defaultShippingAddress = null
+    val defaultBillingAddress = null
+
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -167,21 +158,7 @@ fun ProfileScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("Lieferadresse", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (isEditing) {
-                        OutlinedTextField(value = street, onValueChange = { street = it }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = houseNumber, onValueChange = { houseNumber = it }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = addressAddition, onValueChange = { addressAddition = it }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = postalCode, onValueChange = { postalCode = it }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = city, onValueChange = { city = it }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = country, onValueChange = { country = it }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
-                    } else {
-                        Text("Straße: $street")
-                        Text("Hausnummer: $houseNumber")
-                        if (addressAddition.isNotBlank()) Text("Adresszusatz: $addressAddition")
-                        Text("PLZ: $postalCode")
-                        Text("Stadt: $city")
-                        Text("Land: $country")
-                    }
+                    Text("Keine Standard-Lieferadresse ausgewählt.")
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -190,21 +167,7 @@ fun ProfileScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("Rechnungsadresse", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (isEditing) {
-                        OutlinedTextField(value = billingStreet, onValueChange = { billingStreet = it }, label = { Text("Straße") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = billingHouseNumber, onValueChange = { billingHouseNumber = it }, label = { Text("Hausnummer") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = billingAddressAddition, onValueChange = { billingAddressAddition = it }, label = { Text("Adresszusatz") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = billingPostalCode, onValueChange = { billingPostalCode = it }, label = { Text("PLZ") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = billingCity, onValueChange = { billingCity = it }, label = { Text("Stadt") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = billingCountry, onValueChange = { billingCountry = it }, label = { Text("Land") }, modifier = Modifier.fillMaxWidth())
-                    } else {
-                        Text("Straße: $billingStreet")
-                        Text("Hausnummer: $billingHouseNumber")
-                        if (billingAddressAddition.isNotBlank()) Text("Adresszusatz: $billingAddressAddition")
-                        Text("PLZ: $billingPostalCode")
-                        Text("Stadt: $billingCity")
-                        Text("Land: $billingCountry")
-                    }
+                    Text("Keine Standard-Rechnungsadresse ausgewählt.")
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -213,25 +176,44 @@ fun ProfileScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("Zahlungsmethode", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (isEditing) {
-                        PaymentMethodSelector(
-                            selectedMethod = paymentMethodType,
-                            onMethodSelected = { paymentMethodType = it },
-                            paypalEmail = paypalEmail,
-                            onPaypalEmailChange = { paypalEmail = it },
-                            ibanNumber = ibanNumber,
-                            onIbanNumberChange = { ibanNumber = it }
-                        )
+                    if (defaultPayment != null) {
+                        Text("Typ: ${defaultPayment.type}")
+                        when (defaultPayment.type) {
+                            "PayPal" -> Text("PayPal: ${defaultPayment.email}")
+                            "IBAN" -> Text("IBAN: ${defaultPayment.iban}")
+                            "CREDIT_CARD" -> Text("Kreditkarte")
+                            "CASH_ON_DELIVERY" -> Text("Nachnahme")
+                        }
                     } else {
-                        Text("Typ: $paymentMethodType")
-                        if (paymentMethodType == "PayPal") Text("PayPal: $paypalEmail")
-                        if (paymentMethodType == "IBAN") Text("IBAN: $ibanNumber")
+                        Text("Keine Standard-Zahlungsart ausgewählt.")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { userProfileViewModel.addPayment(user!!.id!!, de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod()) }) {
+                        Text("Zahlungsart hinzufügen")
+                    }
+                    paymentMethods.forEach { (id, payment) ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            RadioButton(
+                                selected = id == defaultPaymentMethodId,
+                                onClick = { userProfileViewModel.setDefaultPaymentMethod(id) }
+                            )
+                            Column(Modifier.weight(1f)) {
+                                Text("Typ: ${payment.type}")
+                                when (payment.type) {
+                                    "PayPal" -> Text("PayPal: ${payment.email}")
+                                    "IBAN" -> Text("IBAN: ${payment.iban}")
+                                    "CREDIT_CARD" -> Text("Kreditkarte")
+                                    "CASH_ON_DELIVERY" -> Text("Nachnahme")
+                                }
+                            }
+                            IconButton(onClick = { userProfileViewModel.deletePayment(user!!.id!!, id) }) { Icon(Icons.Default.Delete, contentDescription = "Löschen") }
+                        }
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lieferadressen-Liste
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -243,8 +225,8 @@ fun ProfileScreen(
                     shippingAddresses.forEach { (id, address) ->
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             RadioButton(
-                                selected = id == defaultShippingAddressId,
-                                onClick = { user?.id?.let { userProfileViewModel.setDefaultShippingAddress(it, id) } }
+                                selected = false,
+                                onClick = { }
                             )
                             Column(Modifier.weight(1f)) {
                                 Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
@@ -258,7 +240,7 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Rechnungsadressen-Liste
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -270,8 +252,8 @@ fun ProfileScreen(
                     billingAddresses.forEach { (id, address) ->
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             RadioButton(
-                                selected = id == defaultBillingAddressId,
-                                onClick = { user?.id?.let { userProfileViewModel.setDefaultBillingAddress(it, id) } }
+                                selected = false,
+                                onClick = { }
                             )
                             Column(Modifier.weight(1f)) {
                                 Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}")
@@ -285,7 +267,7 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Dialog für Hinzufügen/Bearbeiten von Adressen (MVVM)
+
             if (addressDialogType != UserProfileViewModel.AddressDialogType.NONE) {
                 val isEdit = addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_SHIPPING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
                 val isBilling = addressDialogType == UserProfileViewModel.AddressDialogType.ADD_BILLING || addressDialogType == UserProfileViewModel.AddressDialogType.EDIT_BILLING
@@ -344,28 +326,7 @@ fun ProfileScreen(
                                 lastName = lastName,
                                 email = email,
                                 phone = phone.takeIf { it.isNotBlank() },
-                                mobile = mobile.takeIf { it.isNotBlank() },
-                                shippingAddress = Address(
-                                    street = street,
-                                    houseNumber = houseNumber,
-                                    addressAddition = addressAddition.takeIf { it.isNotBlank() },
-                                    postalCode = postalCode,
-                                    city = city,
-                                    country = country
-                                ),
-                                billingAddress = Address(
-                                    street = billingStreet,
-                                    houseNumber = billingHouseNumber,
-                                    addressAddition = billingAddressAddition.takeIf { it.isNotBlank() },
-                                    postalCode = billingPostalCode,
-                                    city = billingCity,
-                                    country = billingCountry
-                                ),
-                                paymentMethod = when (paymentMethodType) {
-                                    "PayPal" -> PaymentMethod.paypal(email = paypalEmail)
-                                    "IBAN" -> PaymentMethod.iban(iban = ibanNumber)
-                                    else -> PaymentMethod.none()
-                                }
+                                mobile = mobile.takeIf { it.isNotBlank() }
                             )
                             userProfileViewModel.updateUser(updatedUser)
                             isEditing = false
