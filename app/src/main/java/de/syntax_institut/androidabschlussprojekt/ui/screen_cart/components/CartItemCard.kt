@@ -11,6 +11,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.model.CartItem
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.platform.LocalContext
+import coil3.request.crossfade
 
 @Composable
 fun CartItemCard(
@@ -28,27 +35,20 @@ fun CartItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            
-            Card(
-                modifier = Modifier.size(60.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🛍️",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-            }
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cartItem.product.images.firstOrNull())
+                    .crossfade(true)
+                    .build(),
+                contentDescription = cartItem.product.title,
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
             
             Spacer(modifier = Modifier.width(12.dp))
             
-           
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -67,7 +67,6 @@ fun CartItemCard(
                 )
             }
             
-           
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -104,7 +103,6 @@ fun CartItemCard(
             }
             
             Spacer(modifier = Modifier.width(8.dp))
-            
             
             IconButton(
                 onClick = onRemove,
