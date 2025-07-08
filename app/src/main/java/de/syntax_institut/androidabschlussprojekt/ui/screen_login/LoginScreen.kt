@@ -4,14 +4,12 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -29,6 +27,10 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.AlertDialog
 
 @Composable
 fun LoginScreen(
@@ -47,6 +49,8 @@ fun LoginScreen(
     val isLoading by authViewModel.isLoading.collectAsState()
     val errorMessage by authViewModel.errorMessage.collectAsState()
     val user by authViewModel.user.collectAsState()
+    val passwordResetMessage by authViewModel.passwordResetMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(user) {
         if (user != null) {
@@ -56,6 +60,13 @@ fun LoginScreen(
 
     LaunchedEffect(isRegisterMode) {
         authViewModel.clearError()
+    }
+
+    LaunchedEffect(passwordResetMessage) {
+        passwordResetMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            authViewModel.clearPasswordResetMessage()
+        }
     }
 
     val context = LocalContext.current
@@ -161,5 +172,30 @@ fun LoginScreen(
             errorMessage = errorMessage,
             onDismiss = { authViewModel.clearError() }
         )
+        Spacer(Modifier.height(4.dp))
+        TextButton(
+            onClick = {
+                authViewModel.sendPasswordResetEmail(email)
+            },
+            enabled = !isLoading && email.isNotBlank()
+        ) {
+            Text("Passwort vergessen?")
+        }
     }
+
+
+    if (passwordResetMessage != null) {
+        AlertDialog(
+            onDismissRequest = { authViewModel.clearPasswordResetMessage() },
+            confirmButton = {
+                TextButton(onClick = { authViewModel.clearPasswordResetMessage() }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Passwort zurücksetzen") },
+            text = { Text(passwordResetMessage ?: "") }
+        )
+    }
+
+    SnackbarHost(hostState = snackbarHostState)
 }

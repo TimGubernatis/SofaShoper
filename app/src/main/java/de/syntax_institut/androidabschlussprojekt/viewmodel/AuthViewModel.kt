@@ -40,6 +40,9 @@ class AuthViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    private val _passwordResetMessage = MutableStateFlow<String?>(null)
+    val passwordResetMessage: StateFlow<String?> = _passwordResetMessage.asStateFlow()
+
     init {
         viewModelScope.launch {
             try {
@@ -178,9 +181,15 @@ class AuthViewModel(
         viewModelScope.launch {
             try {
                 FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+                _passwordResetMessage.value = "E-Mail zum Zurücksetzen wurde gesendet."
             } catch (e: Exception) {
+                _passwordResetMessage.value = e.localizedMessage ?: "Fehler beim Senden der E-Mail."
             }
         }
+    }
+
+    fun clearPasswordResetMessage() {
+        _passwordResetMessage.value = null
     }
 
     fun deleteAccount() {
