@@ -33,6 +33,7 @@ import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.items
+import de.syntax_institut.androidabschlussprojekt.data.model.Category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,7 @@ fun MainScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val selectedCategory by mainViewModel.selectedCategory.collectAsState()
+    val selectedCategoryId = selectedCategory?.id ?: -1
     val searchQuery by mainViewModel.searchQuery.collectAsState()
     val itemCount by cartViewModel.itemCount.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
@@ -94,6 +96,12 @@ fun MainScreen(
             pendingProductName = null
         }
     }
+
+    val categories = when (val state = uiState) {
+        is UiState.Success -> listOf(Category(-1, "Alle", "all", "", "", "")) + state.categories
+        else -> emptyList()
+    }
+    val selectedCategoryOrNull = if (selectedCategoryId == -1) null else selectedCategory
 
     Scaffold(
         topBar = {
@@ -200,11 +208,12 @@ fun MainScreen(
                 }
 
                 is UiState.Success -> {
-                    val categories = state.categories
                     CategoryRow(
                         categories = categories,
-                        selectedCategory = selectedCategory,
-                        onCategoryClick = { mainViewModel.selectCategory(it) }
+                        selectedCategory = categories.find { it.id == selectedCategoryId } ?: categories.firstOrNull(),
+                        onCategoryClick = {
+                            if (it.id == -1) mainViewModel.selectCategory(null) else mainViewModel.selectCategory(it)
+                        }
                     )
                     DealOfTheDayBanner()
                     LazyColumn(

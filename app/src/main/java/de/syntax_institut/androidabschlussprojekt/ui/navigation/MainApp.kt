@@ -74,7 +74,10 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             }
 
             composable("favorites") {
-                FavoritesScreen()
+                FavoritesScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onProductClick = { productId -> navController.navigate("productDetail/$productId") }
+                )
             }
 
             composable("cart") {
