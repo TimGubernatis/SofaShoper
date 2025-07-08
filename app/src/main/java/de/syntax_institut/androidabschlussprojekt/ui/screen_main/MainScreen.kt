@@ -2,16 +2,9 @@ package de.syntax_institut.androidabschlussprojekt.ui.screen_main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.CategoryRow
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.CollapsibleSearchBar
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.ProductCard
@@ -22,18 +15,19 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import androidx.compose.ui.res.stringResource
-import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.items
 import de.syntax_institut.androidabschlussprojekt.data.model.Category
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainTopBar
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartFab
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartSnackbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,13 +55,16 @@ fun MainScreen(
 
     val cartTotal by cartViewModel.cartTotal.collectAsState()
     val cartItems by cartViewModel.cartItems.collectAsState()
-    var bottomBarTotal by remember { mutableStateOf(0.0) }
-    var bottomBarCount by remember { mutableStateOf(0) }
+    var bottomBarTotal by remember { mutableDoubleStateOf(0.0) }
+    var bottomBarCount by remember { mutableIntStateOf(0) }
     var pendingProductName by remember { mutableStateOf<String?>(null) }
     var showCartBar by remember { mutableStateOf(false) }
 
-    LaunchedEffect(user?.id, allProducts) {
-        user?.id?.let { userId ->
+    val currentUser = user
+    val userName = if (currentUser == null) null else (currentUser.firstName.takeIf { it.isNotBlank() } ?: currentUser.displayName ?: "User")
+
+    LaunchedEffect(currentUser?.id, allProducts) {
+        currentUser?.id?.let { userId ->
             favoritesViewModel.loadFavorites(userId, allProducts)
         }
     }
@@ -105,72 +102,24 @@ fun MainScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    if (!isSearching) {
-                        if (user == null) {
-                            Text(stringResource(id = R.string.welcome_guest))
-                        } else {
-                            val name = user?.firstName?.takeIf { it.isNotBlank() } ?: user?.displayName ?: "User"
-                            Text(stringResource(id = R.string.welcome_user, name))
-                        }
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { isSearching = !isSearching }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-
-                    if (!isSearching) {
-                        IconButton(onClick = onProfileClick) {
-                            Icon(Icons.Default.Person, contentDescription = "Profile")
-                        }
-                        IconButton(onClick = onFavoritesClick) {
-                            Icon(Icons.Default.Favorite, contentDescription = "Favorites")
-                        }
-                    }
-                }
+            MainTopBar(
+                isSearching = isSearching,
+                userName = userName,
+                onSearchClick = { isSearching = !isSearching },
+                onProfileClick = onProfileClick,
+                onFavoritesClick = onFavoritesClick
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCartClick) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
-                if (itemCount > 0) {
-                    Text(itemCount.toString(), modifier = Modifier.padding(start = 4.dp))
-                }
-            }
+            MainCartFab(itemCount = itemCount, onClick = onCartClick)
         },
         bottomBar = {
             if (showCartBar && pendingProductName != null) {
-                Surface(
-                    tonalElevation = 4.dp,
-                    shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp, horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "\"${pendingProductName}\" zum Warenkorb hinzugefügt",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "Warenkorb: ${formatPrice(bottomBarTotal)} (${bottomBarCount} Artikel)",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = null,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
+                MainCartSnackbar(
+                    productName = pendingProductName,
+                    total = bottomBarTotal,
+                    count = bottomBarCount
+                )
             }
         }
     ) { padding ->
@@ -221,7 +170,6 @@ fun MainScreen(
                         verticalArrangement = Arrangement.spacedBy(responsiveSpacing())
                     ) {
                         items(filteredProducts, key = { it.id }) { product ->
-                            val currentUser = user
                             ProductCard(
                                 product = product,
                                 onClick = { onProductClick(product.id) },
