@@ -104,7 +104,6 @@ class CheckoutViewModel(
                         mobile = _shippingAddress.value.mobile
                     ))
 
-
                     val billing = billingAddress.value
                     val billingId = if (billing != null) {
                         userRepository.addBillingAddress(user.id!!, Address(
@@ -120,7 +119,6 @@ class CheckoutViewModel(
                             mobile = billing.mobile
                         ))
                     } else {
-
                         userRepository.addBillingAddress(user.id!!, Address(
                             recipientFirstName = _shippingAddress.value.recipientFirstName,
                             recipientLastName = _shippingAddress.value.recipientLastName,
@@ -135,10 +133,20 @@ class CheckoutViewModel(
                         ))
                     }
 
-
                     _selectedPaymentMethod.value?.let { pm ->
                         userRepository.addPayment(user.id!!, pm)
                     }
+
+                    // Bestellung in Firestore speichern
+                    userRepository.addOrder(
+                        userId = user.id!!,
+                        items = cartRepository.cartItems.value,
+                        total = cartRepository.cartTotal.value,
+                        shippingAddressId = shippingId,
+                        billingAddressId = billingId,
+                        status = order.status.name,
+                        timestamp = order.createdAt
+                    )
                 }
                 
                 cartRepository.clearCart()

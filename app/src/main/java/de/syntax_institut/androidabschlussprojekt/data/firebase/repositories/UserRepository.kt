@@ -174,4 +174,34 @@ class UserRepository {
     suspend fun setDefaultBillingAddress(userId: String, addressId: String) {
         collection.document(userId).update("defaultBillingAddressId", addressId).await()
     }
+
+    suspend fun addOrder(
+        userId: String,
+        items: List<de.syntax_institut.androidabschlussprojekt.data.model.CartItem>,
+        total: Double,
+        shippingAddressId: String,
+        billingAddressId: String,
+        status: String = "PENDING",
+        timestamp: Long = System.currentTimeMillis()
+    ) {
+        val orderData = hashMapOf(
+            "items" to items.map { item ->
+                hashMapOf(
+                    "productId" to item.product.id,
+                    "title" to item.product.title,
+                    "price" to item.product.price,
+                    "quantity" to item.quantity
+                )
+            },
+            "total" to total,
+            "shippingAddressId" to shippingAddressId,
+            "billingAddressId" to billingAddressId,
+            "status" to status,
+            "timestamp" to timestamp
+        )
+        collection.document(userId)
+            .collection("Bestellungen")
+            .add(orderData)
+            .await()
+    }
 }
