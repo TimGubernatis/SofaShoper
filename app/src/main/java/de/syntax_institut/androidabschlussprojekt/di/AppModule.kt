@@ -8,7 +8,7 @@ import de.syntax_institut.androidabschlussprojekt.data.remote.ProductApiService
 import de.syntax_institut.androidabschlussprojekt.data.repository.ProductRepository
 import de.syntax_institut.androidabschlussprojekt.data.repository.CartRepository
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
-import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.SettingsViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
@@ -59,7 +59,7 @@ val appModule = module {
 
     viewModelOf(::AuthViewModel)
     viewModelOf(::UserProfileViewModel)
-    viewModelOf(::HomeViewModel)
+    viewModelOf(::MainViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::CartViewModel)
     viewModelOf(::CheckoutViewModel)

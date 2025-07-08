@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.ProductDetailScreen
-import de.syntax_institut.androidabschlussprojekt.ui.screen_home.HomeScreen
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.MainScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.ProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.FavoritesScreen
@@ -28,7 +28,7 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
         NavHost(navController = navController, startDestination = "home") {
 
             composable("home") {
-                HomeScreen(
+                MainScreen(
                     onProductClick = { productId -> navController.navigate("productDetail/$productId") },
                     onCartClick = { navController.navigate("cart") },
                     onProfileClick = {

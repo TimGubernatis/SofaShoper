@@ -1,8 +1,7 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_home
+package de.syntax_institut.androidabschlussprojekt.ui.screen_main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
@@ -13,11 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CategoryRow
-import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.CollapsibleSearchBar
-import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.*
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.CategoryRow
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.CollapsibleSearchBar
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.ProductCard
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.DealOfTheDayBanner
 import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
-import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UiState
 import org.koin.androidx.compose.koinViewModel
@@ -27,18 +26,18 @@ import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.isTablet
-import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
+import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    homeViewModel: HomeViewModel = koinViewModel(),
+fun MainScreen(
+    mainViewModel: MainViewModel = koinViewModel(),
     cartViewModel: CartViewModel = koinViewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
@@ -47,16 +46,16 @@ fun HomeScreen(
     authViewModel: AuthViewModel = koinViewModel(),
     favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
-    val uiState by homeViewModel.uiState.collectAsState()
-    val selectedCategory by homeViewModel.selectedCategory.collectAsState()
-    val searchQuery by homeViewModel.searchQuery.collectAsState()
+    val uiState by mainViewModel.uiState.collectAsState()
+    val selectedCategory by mainViewModel.selectedCategory.collectAsState()
+    val searchQuery by mainViewModel.searchQuery.collectAsState()
     val itemCount by cartViewModel.itemCount.collectAsState()
     var isSearching by remember { mutableStateOf(false) }
 
-    val filteredProducts by homeViewModel.filteredProducts.collectAsState()
+    val filteredProducts by mainViewModel.filteredProducts.collectAsState()
     val user by authViewModel.user.collectAsState()
     val favorites by favoritesViewModel.favorites.collectAsState()
-    val allProducts by homeViewModel.allProducts.collectAsState()
+    val allProducts by mainViewModel.allProducts.collectAsState()
 
     val cartTotal by cartViewModel.cartTotal.collectAsState()
     val cartItems by cartViewModel.cartItems.collectAsState()
@@ -176,7 +175,7 @@ fun HomeScreen(
             if (isSearching) {
                 CollapsibleSearchBar(
                     query = searchQuery,
-                    onQueryChange = homeViewModel::updateQuery,
+                    onQueryChange = mainViewModel::updateQuery,
                     isSearching = isSearching,
                     onSearchToggle = { isSearching = !isSearching }
                 )
@@ -196,7 +195,7 @@ fun HomeScreen(
                     ErrorMessage(
                         message = stringResource(state.messageRes),
                         showRetryButton = true,
-                        onRetryClick = { homeViewModel.retryFetchData() }
+                        onRetryClick = { mainViewModel.retryFetchData() }
                     )
                 }
 
@@ -205,7 +204,7 @@ fun HomeScreen(
                     CategoryRow(
                         categories = categories,
                         selectedCategory = selectedCategory,
-                        onCategoryClick = { homeViewModel.selectCategory(it) }
+                        onCategoryClick = { mainViewModel.selectCategory(it) }
                     )
                     DealOfTheDayBanner()
                     LazyColumn(

@@ -14,7 +14,7 @@ import java.net.UnknownHostException
 import java.net.SocketTimeoutException
 import de.syntax_institut.androidabschlussprojekt.R
 
-class HomeViewModel(private val repository: ProductRepository) : ViewModel() {
+class MainViewModel(private val repository: ProductRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState

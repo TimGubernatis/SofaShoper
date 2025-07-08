@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import de.syntax_institut.androidabschlussprojekt.ui.components.ErrorMessage
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.components.ProductDetailContent
-import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
@@ -19,18 +19,18 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ProductDetailScreen(
     productId: Int,
-    homeViewModel: HomeViewModel = koinViewModel(),
+    mainViewModel: MainViewModel = koinViewModel(),
     cartViewModel: CartViewModel = koinViewModel(),
     onBackClick: () -> Unit = {},
     authViewModel: AuthViewModel = koinViewModel(),
     favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
-    val product by homeViewModel.selectedProduct.collectAsState()
-    val isLoading by homeViewModel.productLoading.collectAsState()
-    val error by homeViewModel.productError.collectAsState()
+    val product by mainViewModel.selectedProduct.collectAsState()
+    val isLoading by mainViewModel.productLoading.collectAsState()
+    val error by mainViewModel.productError.collectAsState()
     val isInCart by remember { derivedStateOf { cartViewModel.isInCart(productId) } }
     val user by authViewModel.user.collectAsState()
-    val allProducts by homeViewModel.allProducts.collectAsState()
+    val allProducts by mainViewModel.allProducts.collectAsState()
     val favorites by favoritesViewModel.favorites.collectAsState()
     LaunchedEffect(user?.id, allProducts) {
         user?.id?.let { userId ->
@@ -39,7 +39,7 @@ fun ProductDetailScreen(
     }
 
     LaunchedEffect(productId) {
-        homeViewModel.loadProductById(productId)
+        mainViewModel.loadProductById(productId)
     }
 
     Scaffold(
@@ -75,7 +75,7 @@ fun ProductDetailScreen(
                         showBackButton = true,
                         showRetryButton = true,
                         onBackClick = onBackClick,
-                        onRetryClick = { homeViewModel.loadProductById(productId) }
+                        onRetryClick = { mainViewModel.loadProductById(productId) }
                     )
                 }
                 

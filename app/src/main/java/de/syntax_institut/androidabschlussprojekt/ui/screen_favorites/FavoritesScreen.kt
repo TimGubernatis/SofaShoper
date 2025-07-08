@@ -10,21 +10,21 @@ import androidx.compose.ui.Modifier
 import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
-import de.syntax_institut.androidabschlussprojekt.ui.screen_home.components.ProductCard
-import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.ProductCard
+import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 
 @Composable
 fun FavoritesScreen(
     authViewModel: AuthViewModel = koinViewModel(),
     favoritesViewModel: FavoritesViewModel = koinViewModel(),
-    homeViewModel: HomeViewModel = koinViewModel(),
+    mainViewModel: MainViewModel = koinViewModel(),
     cartViewModel: CartViewModel = koinViewModel()
 ) {
     val user by authViewModel.user.collectAsState()
     val favorites by favoritesViewModel.favorites.collectAsState()
     val favoriteProducts by favoritesViewModel.favoriteProducts.collectAsState()
-    val allProducts by homeViewModel.allProducts.collectAsState()
+    val allProducts by mainViewModel.allProducts.collectAsState()
     val cartItems by cartViewModel.cartItems.collectAsState()
 
     LaunchedEffect(user?.id, allProducts) {

@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_home.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_main.components
 
 import android.content.Context
 import androidx.compose.animation.animateColorAsState
