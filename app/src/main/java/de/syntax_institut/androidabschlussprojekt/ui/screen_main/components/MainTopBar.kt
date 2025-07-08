@@ -25,8 +25,9 @@ fun MainTopBar(
     TopAppBar(
         title = {
             if (!isSearching) {
+                val welcomeText = if (userName != null) "Willkommen zurück $userName" else "Willkommen Gast"
                 Text(
-                    text = userName ?: stringResource(id = R.string.welcome_guest)
+                    text = welcomeText
                 )
             }
         },

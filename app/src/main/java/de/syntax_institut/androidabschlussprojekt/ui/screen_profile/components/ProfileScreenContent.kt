@@ -3,7 +3,11 @@ package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -11,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
+import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.*
 
 @Composable
 fun ProfileScreenContent(
@@ -45,7 +51,7 @@ fun ProfileScreenContent(
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.Start
     ) {
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePersonalSection(
+        ProfilePersonalSection(
             firstName = firstName,
             lastName = lastName,
             email = email,
@@ -75,7 +81,7 @@ fun ProfileScreenContent(
             isSaving = isSaving
         )
         Spacer(modifier = Modifier.height(16.dp))
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfileAddressSection(
+        ProfileAddressSection(
             title = "Standard-Lieferadresse",
             addresses = shippingAddresses,
             defaultAddressId = defaultShippingAddressId,
@@ -85,7 +91,7 @@ fun ProfileScreenContent(
             onDelete = { userProfileViewModel.deleteShippingAddress(currentUser?.id ?: "", it) }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfileAddressSection(
+        ProfileAddressSection(
             title = "Standard-Rechnungsadresse",
             addresses = billingAddresses,
             defaultAddressId = defaultBillingAddressId,
@@ -95,7 +101,7 @@ fun ProfileScreenContent(
             onDelete = { userProfileViewModel.deleteBillingAddress(currentUser?.id ?: "", it) }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePaymentSection(
+        ProfilePaymentSection(
             paymentMethods = paymentMethods,
             defaultPaymentMethodId = defaultPaymentMethodId,
             onSetDefault = { userProfileViewModel.setDefaultPaymentMethod(it) },
@@ -103,7 +109,7 @@ fun ProfileScreenContent(
             onDelete = { userProfileViewModel.deletePayment(currentUser?.id ?: "", it) }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressDialog(
+        AddressDialog(
             dialogType = addressDialogType,
             addressForm = addressForm,
             onDismiss = { userProfileViewModel.closeAddressDialog() },
@@ -122,7 +128,7 @@ fun ProfileScreenContent(
         )
         if (showDeleteDialog != null) {
             val (addressId, isBilling) = showDeleteDialog!!
-            de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ConfirmationDialog(
+            ConfirmationDialog(
                 showDialog = true,
                 title = if (isBilling) "Rechnungsadresse löschen?" else "Lieferadresse löschen?",
                 message = "Diese Adresse wird unwiderruflich gelöscht.",
@@ -139,7 +145,7 @@ fun ProfileScreenContent(
                 isDestructive = true
             )
         }
-        de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddPaymentDialog(
+        AddPaymentDialog(
             showDialog = showPaymentDialog,
             onDismiss = { showPaymentDialog = false },
             onSave = { paymentMethod ->
@@ -150,5 +156,61 @@ fun ProfileScreenContent(
                 showPaymentDialog = false
             }
         )
+        Spacer(modifier = Modifier.height(32.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            PrimaryButton(
+                text = "Logout",
+                onClick = { userProfileViewModel.signOut() },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            var showDeleteDialog by remember { mutableStateOf(false) }
+            PrimaryButton(
+                text = "Account löschen",
+                onClick = { showDeleteDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.weight(1f)
+            )
+            if (showDeleteDialog) {
+                var input by remember { mutableStateOf("") }
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Account wirklich löschen?") },
+                    text = {
+                        Column {
+                            Text("Gib 'del' ein, um das Löschen zu bestätigen.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = input,
+                                onValueChange = { input = it },
+                                label = { Text("Bestätigung") }
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        PrimaryButton(
+                            text = "Löschen",
+                            onClick = {
+                                if (input == "del") {
+                                    userProfileViewModel.deleteUserAccount()
+                                    showDeleteDialog = false
+                                }
+                            },
+                            enabled = input == "del",
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        )
+                    },
+                    dismissButton = {
+                        PrimaryButton(
+                            text = "Abbrechen",
+                            onClick = { showDeleteDialog = false }
+                        )
+                    }
+                )
+            }
+        }
     }
 } 

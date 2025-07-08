@@ -35,6 +35,17 @@ fun AccountScreen(
         }
     }
 
+    // Wenn kein User eingeloggt ist, sofort auf den LoginScreen navigieren
+    LaunchedEffect(user) {
+        if (user == null) {
+            navController.navigate("login") {
+                popUpTo("profile") { inclusive = true }
+                launchSingleTop = true
+                restoreState = false
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),

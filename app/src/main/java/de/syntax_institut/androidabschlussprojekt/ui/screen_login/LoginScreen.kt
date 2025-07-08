@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.AlertDialog
+import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 
 @Composable
 fun LoginScreen(
@@ -173,14 +174,14 @@ fun LoginScreen(
             onDismiss = { authViewModel.clearError() }
         )
         Spacer(Modifier.height(4.dp))
-        TextButton(
+        PrimaryButton(
+            text = "Passwort vergessen?",
             onClick = {
                 authViewModel.sendPasswordResetEmail(email)
             },
-            enabled = !isLoading && email.isNotBlank()
-        ) {
-            Text("Passwort vergessen?")
-        }
+            enabled = !isLoading && email.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 
 
