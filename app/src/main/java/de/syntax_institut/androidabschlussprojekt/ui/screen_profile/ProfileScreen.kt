@@ -13,17 +13,18 @@ import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.SupportAgent
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePersonalSection
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfileAddressSection
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePaymentSection
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddPaymentDialog
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressDialog
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ConfirmationDialog
-
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.OrderList
 
 @Composable
 fun ProfileScreen(
@@ -32,6 +33,7 @@ fun ProfileScreen(
     onLogout: () -> Unit = {}
 ) {
     val user by userProfileViewModel.user.collectAsState()
+    val currentUser = user
     val isSigningOut by userProfileViewModel.authViewModel.isSigningOut.collectAsState()
     var userLoaded by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(false) }
@@ -43,32 +45,26 @@ fun ProfileScreen(
     val addressDialogType by userProfileViewModel.addressDialogType.collectAsState()
     val addressForm by userProfileViewModel.addressForm.collectAsState()
     val editAddressId by userProfileViewModel.editAddressId.collectAsState()
-
-
     val paymentMethods by userProfileViewModel.paymentMethods.collectAsState()
     val defaultPaymentMethodId by userProfileViewModel.defaultPaymentMethodId.collectAsState()
     val defaultPayment = paymentMethods.find { it.first == defaultPaymentMethodId }?.second
-
     val defaultShippingAddressId by userProfileViewModel.defaultShippingAddressId.collectAsState()
     val defaultBillingAddressId by userProfileViewModel.defaultBillingAddressId.collectAsState()
     var useShippingAsBilling by remember { mutableStateOf(false) }
-
-
     var showEditDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var showDeleteDialog by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var showPaymentDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(user, isSigningOut) {
-        if (user != null) {
+    var selectedTab by remember { mutableStateOf(0) }
+    LaunchedEffect(currentUser, isSigningOut) {
+        if (currentUser != null) {
             userLoaded = true
         }
-        if (!isSigningOut && userLoaded && user == null) {
+        if (!isSigningOut && userLoaded && currentUser == null) {
             navController.navigate("home") {
                 popUpTo("profile") { inclusive = true }
             }
         }
     }
-
     if (accountDeleted) {
         LaunchedEffect(Unit) {
             navController.navigate("home") {
@@ -76,7 +72,6 @@ fun ProfileScreen(
             }
         }
     }
-
     ConfirmationDialog(
         showDialog = openDialog.value,
         title = "Account wirklich löschen?",
@@ -86,8 +81,7 @@ fun ProfileScreen(
         onDismiss = { openDialog.value = false },
         isDestructive = true
     )
-
-    if (user == null) {
+    if (currentUser == null) {
         LoginScreen(
             onLoginSuccess = {},
             onCancel = {
@@ -98,187 +92,210 @@ fun ProfileScreen(
         )
         return
     }
-
-    var firstName by remember { mutableStateOf(user?.firstName ?: "") }
-    var lastName by remember { mutableStateOf(user?.lastName ?: "") }
-    var email by remember { mutableStateOf(user?.email ?: "") }
-    var phone by remember { mutableStateOf(user?.phone ?: "") }
-    var mobile by remember { mutableStateOf(user?.mobile ?: "") }
-
-
-    LaunchedEffect(user) {
-        user?.id?.let {
+    var firstName by remember { mutableStateOf(currentUser.firstName ?: "") }
+    var lastName by remember { mutableStateOf(currentUser.lastName ?: "") }
+    var email by remember { mutableStateOf(currentUser.email ?: "") }
+    var phone by remember { mutableStateOf(currentUser.phone ?: "") }
+    var mobile by remember { mutableStateOf(currentUser.mobile ?: "") }
+    LaunchedEffect(currentUser) {
+        currentUser.id?.let {
             userProfileViewModel.loadAddresses(it)
             userProfileViewModel.loadPayments(it)
         }
     }
     val shippingAddresses by userProfileViewModel.shippingAddresses.collectAsState()
     val billingAddresses by userProfileViewModel.billingAddresses.collectAsState()
-    val defaultShippingAddress = null
-    val defaultBillingAddress = null
-
     val scrollState = rememberScrollState()
-
+    LaunchedEffect(selectedTab, currentUser.id) {
+        if (selectedTab == 1 && currentUser.id != null) {
+            userProfileViewModel.loadOrders(currentUser.id!!)
+        }
+    }
+    val orders by userProfileViewModel.orders.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom).asPaddingValues())
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ProfilePersonalSection(
-                firstName = firstName,
-                lastName = lastName,
-                email = email,
-                phone = phone,
-                mobile = mobile,
-                isEditing = isEditing,
-                onFirstNameChange = { firstName = it },
-                onLastNameChange = { lastName = it },
-                onEmailChange = { email = it },
-                onPhoneChange = { phone = it },
-                onMobileChange = { mobile = it },
-                onEditClick = { isEditing = true },
-                onSaveClick = {
-                    val currentUser = user
-                    if (currentUser != null) {
-                        val updatedUser = currentUser.copy(
-                            firstName = firstName,
-                            lastName = lastName,
-                            email = email,
-                            phone = phone.takeIf { it.isNotBlank() },
-                            mobile = mobile.takeIf { it.isNotBlank() }
-                        )
-                        userProfileViewModel.updateUser(updatedUser)
-                        isEditing = false
-                    }
-                },
-                onCancelClick = { isEditing = false },
-                isSaving = isSaving
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProfileAddressSection(
-                title = "Standard-Lieferadresse",
-                addresses = shippingAddresses,
-                defaultAddressId = defaultShippingAddressId,
-                onSetDefault = { userProfileViewModel.setDefaultShippingAddress(user!!.id!!, it) },
-                onAdd = { userProfileViewModel.openAddShippingAddress() },
-                onEdit = { id, address -> userProfileViewModel.openEditShippingAddress(id, address) },
-                onDelete = { userProfileViewModel.deleteShippingAddress(user!!.id!!, it) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProfileAddressSection(
-                title = "Standard-Rechnungsadresse",
-                addresses = billingAddresses,
-                defaultAddressId = defaultBillingAddressId,
-                onSetDefault = { userProfileViewModel.setDefaultBillingAddress(user!!.id!!, it) },
-                onAdd = { userProfileViewModel.openAddBillingAddress() },
-                onEdit = { id, address -> userProfileViewModel.openEditBillingAddress(id, address) },
-                onDelete = { userProfileViewModel.deleteBillingAddress(user!!.id!!, it) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProfilePaymentSection(
-                paymentMethods = paymentMethods,
-                defaultPaymentMethodId = defaultPaymentMethodId,
-                onSetDefault = { userProfileViewModel.setDefaultPaymentMethod(it) },
-                onAdd = { showPaymentDialog = true },
-                onDelete = { userProfileViewModel.deletePayment(user!!.id!!, it) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AddressDialog(
-                dialogType = addressDialogType,
-                addressForm = addressForm,
-                onDismiss = { userProfileViewModel.closeAddressDialog() },
-                onSave = {
-                    val currentUser = user
-                    val userId = currentUser?.id
-                    if (userId != null) {
-                        userProfileViewModel.saveAddress(userId)
-                    }
-                },
-                onFieldChange = { newAddress ->
-                    userProfileViewModel.setAddressFormField(
-                        recipientFirstName = newAddress.recipientFirstName,
-                        recipientLastName = newAddress.recipientLastName,
-                        street = newAddress.street,
-                        houseNumber = newAddress.houseNumber,
-                        addressAddition = newAddress.addressAddition,
-                        postalCode = newAddress.postalCode,
-                        city = newAddress.city,
-                        country = newAddress.country
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Zurück",
+                        tint = MaterialTheme.colorScheme.primary
                     )
-                },
-                isValid = userProfileViewModel.validateAddress()
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (errorMessage != null) {
-                Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = { selectedTab = 0 }) {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = "Profil",
+                            tint = if (selectedTab == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Text("Profil", style = MaterialTheme.typography.labelSmall)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = { selectedTab = 1 }) {
+                        Icon(
+                            imageVector = Icons.Filled.ShoppingBag,
+                            contentDescription = "Bestellungen",
+                            tint = if (selectedTab == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Text("Bestellungen", style = MaterialTheme.typography.labelSmall)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = { selectedTab = 2 }) {
+                        Icon(
+                            imageVector = Icons.Filled.SupportAgent,
+                            contentDescription = "Support",
+                            tint = if (selectedTab == 2) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Text("Support", style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        when (selectedTab) {
+            0 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    ProfilePersonalSection(
+                        firstName = firstName,
+                        lastName = lastName,
+                        email = email,
+                        phone = phone,
+                        mobile = mobile,
+                        isEditing = isEditing,
+                        onFirstNameChange = { firstName = it },
+                        onLastNameChange = { lastName = it },
+                        onEmailChange = { email = it },
+                        onPhoneChange = { phone = it },
+                        onMobileChange = { mobile = it },
+                        onEditClick = { isEditing = true },
+                        onSaveClick = {
+                            val updatedUser = currentUser.copy(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = email,
+                                phone = phone.takeIf { it.isNotBlank() },
+                                mobile = mobile.takeIf { it.isNotBlank() }
+                            )
+                            userProfileViewModel.updateUser(updatedUser)
+                            isEditing = false
+                        },
+                        onCancelClick = { isEditing = false },
+                        isSaving = isSaving
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ProfileAddressSection(
+                        title = "Standard-Lieferadresse",
+                        addresses = shippingAddresses,
+                        defaultAddressId = defaultShippingAddressId,
+                        onSetDefault = { userProfileViewModel.setDefaultShippingAddress(currentUser.id!!, it) },
+                        onAdd = { userProfileViewModel.openAddShippingAddress() },
+                        onEdit = { id, address -> userProfileViewModel.openEditShippingAddress(id, address) },
+                        onDelete = { userProfileViewModel.deleteShippingAddress(currentUser.id!!, it) }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ProfileAddressSection(
+                        title = "Standard-Rechnungsadresse",
+                        addresses = billingAddresses,
+                        defaultAddressId = defaultBillingAddressId,
+                        onSetDefault = { userProfileViewModel.setDefaultBillingAddress(currentUser.id!!, it) },
+                        onAdd = { userProfileViewModel.openAddBillingAddress() },
+                        onEdit = { id, address -> userProfileViewModel.openEditBillingAddress(id, address) },
+                        onDelete = { userProfileViewModel.deleteBillingAddress(currentUser.id!!, it) }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ProfilePaymentSection(
+                        paymentMethods = paymentMethods,
+                        defaultPaymentMethodId = defaultPaymentMethodId,
+                        onSetDefault = { userProfileViewModel.setDefaultPaymentMethod(it) },
+                        onAdd = { showPaymentDialog = true },
+                        onDelete = { userProfileViewModel.deletePayment(currentUser.id!!, it) }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AddressDialog(
+                        dialogType = addressDialogType,
+                        addressForm = addressForm,
+                        onDismiss = { userProfileViewModel.closeAddressDialog() },
+                        onSave = { userProfileViewModel.saveAddress(currentUser.id!!) },
+                        onFieldChange = { userProfileViewModel.setAddressFormField(
+                            recipientFirstName = it.recipientFirstName,
+                            recipientLastName = it.recipientLastName,
+                            street = it.street,
+                            houseNumber = it.houseNumber,
+                            addressAddition = it.addressAddition,
+                            postalCode = it.postalCode,
+                            city = it.city,
+                            country = it.country
+                        ) },
+                        isValid = userProfileViewModel.validateAddress()
+                    )
+                    if (showDeleteDialog != null) {
+                        val (addressId, isBilling) = showDeleteDialog!!
+                        ConfirmationDialog(
+                            showDialog = true,
+                            title = if (isBilling) "Rechnungsadresse löschen?" else "Lieferadresse löschen?",
+                            message = "Diese Adresse wird unwiderruflich gelöscht.",
+                            confirmText = "Löschen",
+                            onConfirm = {
+                                val userId = currentUser.id
+                                if (userId != null) {
+                                    if (isBilling) userProfileViewModel.deleteBillingAddress(userId, addressId)
+                                    else userProfileViewModel.deleteShippingAddress(userId, addressId)
+                                }
+                                showDeleteDialog = null
+                            },
+                            onDismiss = { showDeleteDialog = null },
+                            isDestructive = true
+                        )
+                    }
+                    AddPaymentDialog(
+                        showDialog = showPaymentDialog,
+                        onDismiss = { showPaymentDialog = false },
+                        onSave = { paymentMethod ->
+                            val userId = currentUser.id
+                            if (userId != null) {
+                                userProfileViewModel.addPayment(userId, paymentMethod)
+                            }
+                            showPaymentDialog = false
+                        }
+                    )
+                }
+            }
+            1 -> {
+                OrderList(orders = orders, modifier = Modifier.padding(16.dp))
+            }
+            2 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text("Support-Bereich (bald verfügbar)", style = MaterialTheme.typography.titleMedium)
+                }
             }
         }
     }
-
-
-    ConfirmationDialog(
-        showDialog = showEditDialog != null,
-        title = "Adresse bearbeiten",
-        message = "Willst du diese Adresse wirklich bearbeiten?",
-        confirmText = "Bearbeiten",
-        onConfirm = {
-            val (addressId, isBilling) = showEditDialog!!
-            if (isBilling) {
-                val address = billingAddresses.find { it.first == addressId }?.second
-                if (address != null) userProfileViewModel.openEditBillingAddress(addressId, address)
-            } else {
-                val address = shippingAddresses.find { it.first == addressId }?.second
-                if (address != null) userProfileViewModel.openEditShippingAddress(addressId, address)
-            }
-        },
-        onDismiss = { showEditDialog = null }
-    )
-
-    ConfirmationDialog(
-        showDialog = showDeleteDialog != null,
-        title = "Adresse löschen",
-        message = "Willst du diese Adresse wirklich löschen?",
-        confirmText = "Löschen",
-        onConfirm = {
-            val (addressId, isBilling) = showDeleteDialog!!
-            val currentUser = user
-            val userId = currentUser?.id
-            if (userId != null) {
-                if (isBilling) {
-                    userProfileViewModel.deleteBillingAddress(userId, addressId)
-                } else {
-                    userProfileViewModel.deleteShippingAddress(userId, addressId)
-                }
-            }
-        },
-        onDismiss = { showDeleteDialog = null },
-        isDestructive = true
-    )
-
-    AddPaymentDialog(
-        showDialog = showPaymentDialog,
-        onDismiss = { showPaymentDialog = false },
-        onSave = { paymentMethod ->
-            val currentUser = user
-            val userId = currentUser?.id
-            if (userId != null) {
-                userProfileViewModel.addPayment(userId, paymentMethod)
-            }
-            showPaymentDialog = false
-        }
-    )
 }

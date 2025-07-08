@@ -25,4 +25,21 @@ enum class OrderStatus {
     SHIPPED,
     DELIVERED,
     CANCELLED
-} 
+}
+
+data class OrderFirestoreModel(
+    val id: String = "",
+    val items: List<OrderItemFirestoreModel> = emptyList(),
+    val total: Double = 0.0,
+    val shippingAddressId: String = "",
+    val billingAddressId: String = "",
+    val status: String = "PENDING",
+    val timestamp: Long = 0L
+)
+
+data class OrderItemFirestoreModel(
+    val productId: Int = 0,
+    val title: String = "",
+    val price: Double = 0.0,
+    val quantity: Int = 0
+) 

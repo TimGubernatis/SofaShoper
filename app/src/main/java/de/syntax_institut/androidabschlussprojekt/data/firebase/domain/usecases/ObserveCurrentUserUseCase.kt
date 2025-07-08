@@ -24,18 +24,15 @@ class ObserveCurrentUserUseCase(
     operator fun invoke() : Flow<User?> {
         return try {
             authenticationService.userId.flatMapConcat { userId ->
-                Log.i(TAG, "invoke: observing user with id=$userId")
                 if (userId == null) {
                     flowOf(null)
                 } else {
                     userRepository.observeUser(userId)
                 }
             }.catch { e ->
-                Log.e(TAG, "Error observing user: ${e.message}")
                 emit(null)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing user observation: ${e.message}")
             flowOf(null)
         }
     }

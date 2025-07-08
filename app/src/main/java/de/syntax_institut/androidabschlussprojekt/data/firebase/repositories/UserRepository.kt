@@ -204,4 +204,28 @@ class UserRepository {
             .add(orderData)
             .await()
     }
+
+    suspend fun getOrders(userId: String): List<de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel> {
+        val snapshot = collection.document(userId).collection("Bestellungen").get().await()
+        return snapshot.documents.mapNotNull { doc ->
+            val data = doc.data ?: return@mapNotNull null
+            val items = (data["items"] as? List<Map<String, Any?>>)?.map { itemMap ->
+                de.syntax_institut.androidabschlussprojekt.data.model.OrderItemFirestoreModel(
+                    productId = (itemMap["productId"] as? Long)?.toInt() ?: 0,
+                    title = itemMap["title"] as? String ?: "",
+                    price = (itemMap["price"] as? Double) ?: 0.0,
+                    quantity = (itemMap["quantity"] as? Long)?.toInt() ?: 0
+                )
+            } ?: emptyList()
+            de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel(
+                id = doc.id,
+                items = items,
+                total = (data["total"] as? Double) ?: 0.0,
+                shippingAddressId = data["shippingAddressId"] as? String ?: "",
+                billingAddressId = data["billingAddressId"] as? String ?: "",
+                status = data["status"] as? String ?: "PENDING",
+                timestamp = (data["timestamp"] as? Long) ?: 0L
+            )
+        }
+    }
 }

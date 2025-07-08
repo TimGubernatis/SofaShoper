@@ -59,6 +59,9 @@ class UserProfileViewModel(
     private val _defaultBillingAddressId = MutableStateFlow<String?>(null)
     val defaultBillingAddressId: StateFlow<String?> = _defaultBillingAddressId
 
+    private val _orders = MutableStateFlow<List<de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel>>(emptyList())
+    val orders: StateFlow<List<de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel>> = _orders
+
     init {
         viewModelScope.launch {
             authViewModel.user.collect { currentUser ->
@@ -291,6 +294,12 @@ class UserProfileViewModel(
             userRepository.setDefaultBillingAddress(userId, addressId)
             _defaultBillingAddressId.value = addressId
             _user.value = _user.value?.copy(defaultBillingAddressId = addressId)
+        }
+    }
+
+    fun loadOrders(userId: String) {
+        viewModelScope.launch {
+            _orders.value = userRepository.getOrders(userId)
         }
     }
 }
