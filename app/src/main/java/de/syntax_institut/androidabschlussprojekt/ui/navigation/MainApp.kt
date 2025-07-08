@@ -14,6 +14,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.ProfileScree
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.FavoritesScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.CartScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.CheckoutScreen
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.AccountScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -59,18 +60,7 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             }
 
             composable("profile") {
-                val userProfileViewModel: UserProfileViewModel = koinViewModel()
-                ProfileScreen(
-                    navController = navController,
-                    userProfileViewModel = userProfileViewModel,
-                    onLogout = {
-                        navController.navigate("home") {
-                            popUpTo("home") { inclusive = true }
-                            launchSingleTop = true
-                            restoreState = false
-                        }
-                    }
-                )
+                AccountScreen(navController = navController)
             }
 
             composable("favorites") {
