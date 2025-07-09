@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material.icons.Icons
@@ -18,13 +17,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.SupportAgent
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePersonalSection
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfileAddressSection
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfilePaymentSection
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddPaymentDialog
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.AddressDialog
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ConfirmationDialog
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.OrderList
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.ProfilePersonalSection
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.ProfileAddressSection
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.ProfilePaymentSection
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.AddPaymentDialog
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.AddressDialog
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.ConfirmationDialog
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.orders.components.OrderList
 
 @Composable
 fun ProfileScreen(
@@ -40,7 +39,6 @@ fun ProfileScreen(
     val isSaving by userProfileViewModel.isSaving.collectAsState()
     val errorMessage by userProfileViewModel.errorMessage.collectAsState()
     val accountDeleted by userProfileViewModel.accountDeleted.collectAsState()
-    val context = LocalContext.current
     val openDialog = remember { mutableStateOf(false) }
     val addressDialogType by userProfileViewModel.addressDialogType.collectAsState()
     val addressForm by userProfileViewModel.addressForm.collectAsState()
@@ -82,14 +80,6 @@ fun ProfileScreen(
         isDestructive = true
     )
     if (currentUser == null) {
-        LoginScreen(
-            onLoginSuccess = {},
-            onCancel = {
-                navController.navigate("home") {
-                    popUpTo("profile") { inclusive = true }
-                }
-            }
-        )
         return
     }
     var firstName by remember { mutableStateOf(currentUser.firstName ?: "") }

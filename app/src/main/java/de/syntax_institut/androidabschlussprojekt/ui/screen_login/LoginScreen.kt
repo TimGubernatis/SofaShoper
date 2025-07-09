@@ -22,16 +22,16 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.Ema
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.ErrorMessageLogin
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.AlertDialog
+import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.AlertDialog
-import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 
 @Composable
 fun LoginScreen(

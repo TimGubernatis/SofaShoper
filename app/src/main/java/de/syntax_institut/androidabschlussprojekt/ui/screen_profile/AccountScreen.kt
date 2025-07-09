@@ -12,33 +12,22 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.SupportAgent
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.ProfileScreenContent
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.OrderScreenContent
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.SupportScreenContent
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.ProfileScreenContent
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.orders.OrderScreenContent
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.support.SupportScreenContent
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AccountScreen(
     navController: NavController
 ) {
-    val userProfileViewModel: de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel = org.koin.androidx.compose.koinViewModel()
+    val userProfileViewModel: de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel = koinViewModel()
     val user by userProfileViewModel.user.collectAsState()
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    val isUserLoaded = user != null || userProfileViewModel.user.value != null
-
-    if (!isUserLoaded) {
+    if (user == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
-        }
-        return
-    } else if (user == null) {
-        LaunchedEffect(Unit) {
-            navController.navigate("login") {
-                popUpTo("profile") { inclusive = true }
-                launchSingleTop = true
-                restoreState = false
-            }
         }
         return
     }

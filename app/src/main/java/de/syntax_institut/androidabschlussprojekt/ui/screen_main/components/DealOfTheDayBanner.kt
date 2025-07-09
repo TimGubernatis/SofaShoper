@@ -15,10 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun DealOfTheDayBanner() {
-    //TODO: fullText1 und fullText2 sollen aus der DB kommen damit ich auf der seite die aktionen Planen kann ohne die app zu überarbeiten !
     val fullText1 = "Deal of the Day"
     val fullText2 = "Bis zu 40% auf Top-Produkte"
 

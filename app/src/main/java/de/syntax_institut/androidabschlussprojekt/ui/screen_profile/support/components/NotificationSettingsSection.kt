@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.support.components
 
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text

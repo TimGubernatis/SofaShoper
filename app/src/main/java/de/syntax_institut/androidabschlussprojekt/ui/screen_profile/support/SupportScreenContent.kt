@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.support
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.support.components.NotificationSettingsSection
 
 @Composable
 fun SupportScreenContent() {

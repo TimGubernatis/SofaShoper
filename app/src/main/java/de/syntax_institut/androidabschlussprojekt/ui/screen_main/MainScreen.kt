@@ -19,8 +19,6 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
 import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
 import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.items
@@ -29,13 +27,13 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.Main
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartFab
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartSnackbar
 import de.syntax_institut.androidabschlussprojekt.viewmodel.NotificationViewModel
-import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import de.syntax_institut.androidabschlussprojekt.data.notification.OfferNotificationWorker
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
+import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

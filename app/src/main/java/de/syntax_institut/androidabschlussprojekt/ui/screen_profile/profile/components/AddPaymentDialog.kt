@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

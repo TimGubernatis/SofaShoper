@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.orders
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -7,7 +7,7 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.OrderList
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.orders.components.OrderList
 
 @Composable
 fun OrderScreenContent(

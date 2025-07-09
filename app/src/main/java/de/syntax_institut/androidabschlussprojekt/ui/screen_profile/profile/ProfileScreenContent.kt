@@ -1,4 +1,4 @@
-package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components
+package de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
+import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.profile.components.*
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.components.*
 
 @Composable
 fun ProfileScreenContent(

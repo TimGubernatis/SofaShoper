@@ -60,14 +60,30 @@ fun MainApp(authViewModel: AuthViewModel = koinViewModel()) {
             }
 
             composable("profile") {
-                AccountScreen(navController = navController)
+                if (isUserLoggedIn) {
+                    AccountScreen(navController = navController)
+                } else {
+                    LoginScreen(
+                        authViewModel = authViewModel,
+                        onLoginSuccess = { navController.popBackStack() },
+                        onCancel = { navController.popBackStack() }
+                    )
+                }
             }
 
             composable("favorites") {
-                FavoritesScreen(
-                    onBackClick = { navController.popBackStack() },
-                    onProductClick = { productId -> navController.navigate("productDetail/$productId") }
-                )
+                if (isUserLoggedIn) {
+                    FavoritesScreen(
+                        onBackClick = { navController.popBackStack() },
+                        onProductClick = { productId -> navController.navigate("productDetail/$productId") }
+                    )
+                } else {
+                    LoginScreen(
+                        authViewModel = authViewModel,
+                        onLoginSuccess = { navController.popBackStack() },
+                        onCancel = { navController.popBackStack() }
+                    )
+                }
             }
 
             composable("cart") {
