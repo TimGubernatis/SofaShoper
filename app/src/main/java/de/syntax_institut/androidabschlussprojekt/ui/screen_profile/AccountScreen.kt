@@ -24,7 +24,25 @@ fun AccountScreen(
     val userProfileViewModel: de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel = org.koin.androidx.compose.koinViewModel()
     val user by userProfileViewModel.user.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
-    
+
+    val isUserLoaded = user != null || userProfileViewModel.user.value != null
+
+    if (!isUserLoaded) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    } else if (user == null) {
+        LaunchedEffect(Unit) {
+            navController.navigate("login") {
+                popUpTo("profile") { inclusive = true }
+                launchSingleTop = true
+                restoreState = false
+            }
+        }
+        return
+    }
+
     LaunchedEffect(selectedTab, user?.id) {
         if (selectedTab == 1 && user?.id != null) {
             userProfileViewModel.loadOrders(user!!.id!!)
@@ -32,17 +50,6 @@ fun AccountScreen(
         if (selectedTab == 0 && user?.id != null) {
             userProfileViewModel.loadAddresses(user!!.id!!)
             userProfileViewModel.loadPayments(user!!.id!!)
-        }
-    }
-
-    // Wenn kein User eingeloggt ist, sofort auf den LoginScreen navigieren
-    LaunchedEffect(user) {
-        if (user == null) {
-            navController.navigate("login") {
-                popUpTo("profile") { inclusive = true }
-                launchSingleTop = true
-                restoreState = false
-            }
         }
     }
 

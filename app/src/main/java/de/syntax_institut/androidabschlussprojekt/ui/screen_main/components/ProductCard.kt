@@ -95,7 +95,7 @@ fun ProductCard(
                             .build(),
                         contentDescription = product.title,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().clickable(onClick = onClick),
                         placeholder = painterResource(R.drawable.placeholder),
                         error = painterResource(R.drawable.ic_broken_image)
                     )

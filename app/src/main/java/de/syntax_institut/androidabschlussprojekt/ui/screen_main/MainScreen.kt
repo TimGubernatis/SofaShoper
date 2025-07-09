@@ -28,6 +28,14 @@ import de.syntax_institut.androidabschlussprojekt.data.model.Category
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainTopBar
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartFab
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartSnackbar
+import de.syntax_institut.androidabschlussprojekt.viewmodel.NotificationViewModel
+import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import de.syntax_institut.androidabschlussprojekt.data.notification.OfferNotificationWorker
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,6 +108,10 @@ fun MainScreen(
     }
     val selectedCategoryOrNull = if (selectedCategoryId == -1) null else selectedCategory
 
+    val notificationViewModel: NotificationViewModel = viewModel()
+    val showOptInDialog by notificationViewModel.askAgain.collectAsState()
+    var dialogVisible by remember { mutableStateOf(showOptInDialog) }
+
     Scaffold(
         topBar = {
             MainTopBar(
@@ -129,6 +141,12 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(horizontal = responsivePadding())
         ) {
+            if (dialogVisible && showOptInDialog) {
+                NotificationOptInDialog(
+                    viewModel = notificationViewModel,
+                    onDismiss = { dialogVisible = false }
+                )
+            }
             if (isSearching) {
                 CollapsibleSearchBar(
                     query = searchQuery,

@@ -89,5 +89,6 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.datastore.preferences)
 
 }
