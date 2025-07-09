@@ -106,7 +106,7 @@ fun AccountScreen(
         when (selectedTab) {
             0 -> ProfileScreenContent(navController)
             1 -> OrderScreenContent()
-            2 -> SupportScreenContent(navController)
+            2 -> SupportScreenContent()
         }
     }
 } 
