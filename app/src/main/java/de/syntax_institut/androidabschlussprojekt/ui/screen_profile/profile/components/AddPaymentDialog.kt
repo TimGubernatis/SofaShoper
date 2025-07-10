@@ -14,7 +14,8 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.components.
 fun AddPaymentDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    onSave: (PaymentMethod) -> Unit
+    onSave: (PaymentMethod) -> Unit,
+    userPaymentMethods: List<PaymentMethod> = emptyList()
 ) {
     if (!showDialog) return
 
@@ -29,7 +30,8 @@ fun AddPaymentDialog(
                 Spacer(Modifier.height(16.dp))
                 PaymentMethodSection(
                     selectedMethod = newPaymentMethod,
-                    onMethodSelect = { newPaymentMethod = it }
+                    onMethodSelect = { newPaymentMethod = it },
+                    userPaymentMethods = userPaymentMethods
                 )
                 when (newPaymentMethod.type) {
                     PaymentMethodType.PAYPAL -> {

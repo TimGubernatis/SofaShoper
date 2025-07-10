@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun CheckoutContent(
@@ -57,7 +58,7 @@ fun CheckoutContent(
     onGoogleSignIn: () -> Unit,
     onForgotPassword: () -> Unit,
     useBillingAddress: Boolean,
-    onUseBillingAddressChange: (Boolean) -> Unit,
+    onUseBillingAddressChange: (Boolean) -> Unit = {},
     billingAddress: Address?,
     onBillingAddressChange: (Address) -> Unit,
     shippingAddresses: List<Pair<String, Address>> = emptyList(),
@@ -69,7 +70,10 @@ fun CheckoutContent(
     adoptShippingChanges: Boolean = false,
     onAdoptShippingChangesChange: (Boolean) -> Unit = {},
     adoptBillingChanges: Boolean = false,
-    onAdoptBillingChangesChange: (Boolean) -> Unit = {}
+    onAdoptBillingChangesChange: (Boolean) -> Unit = {},
+    checkoutViewModel: de.syntax_institut.androidabschlussprojekt.viewmodel.CheckoutViewModel,
+    userPaymentMethods: List<PaymentMethod>,
+    onCancel: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -133,12 +137,20 @@ fun CheckoutContent(
 
         if (user != null && shippingAddresses.isNotEmpty()) {
             var expanded by remember { mutableStateOf(false) }
+            var showNewAddressDialog by remember { mutableStateOf(false) }
             Box {
                 OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
                     val selected = shippingAddresses.find { it.first == selectedShippingAddressId }?.second
                     Text(selected?.let { "${it.street} ${it.houseNumber}, ${it.postalCode} ${it.city}" } ?: "Lieferadresse wählen")
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Neue Adresse hinzufügen") },
+                        onClick = {
+                            showNewAddressDialog = true
+                            expanded = false
+                        }
+                    )
                     shippingAddresses.forEach { (id, address) ->
                         DropdownMenuItem(
                             text = { Text("${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}") },
@@ -149,6 +161,35 @@ fun CheckoutContent(
                         )
                     }
                 }
+            }
+            if (showNewAddressDialog) {
+                var newAddress by remember { mutableStateOf<Address>(Address()) }
+                AlertDialog(
+                    onDismissRequest = { showNewAddressDialog = false },
+                    title = { Text("Neue Adresse hinzufügen") },
+                    text = {
+                        AddressSection(
+                            address = newAddress,
+                            onAddressChange = { newAddress = it },
+                            title = "Neue Adresse"
+                        )
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            user?.id?.let { userId ->
+                                checkoutViewModel.addAndSelectNewShippingAddress(userId, newAddress)
+                            }
+                            showNewAddressDialog = false
+                        }) {
+                            Text("Speichern")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showNewAddressDialog = false }) {
+                            Text("Abbrechen")
+                        }
+                    }
+                )
             }
             Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
         }
@@ -207,17 +248,21 @@ fun CheckoutContent(
 
         PaymentMethodSection(
             selectedMethod = selectedPaymentMethod,
-            onMethodSelect = onPaymentMethodSelect
+            onMethodSelect = onPaymentMethodSelect,
+            userPaymentMethods = userPaymentMethods
         )
         
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = onEmailChange,
-            label = { Text(stringResource(R.string.checkout_email_label)) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = user == null
-        )
+
+        if (user == null) {
+            OutlinedTextField(
+                value = email,
+                onValueChange = onEmailChange,
+                label = { Text(stringResource(R.string.checkout_email_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true
+            )
+        }
 
 
         if (user == null) {
@@ -270,20 +315,30 @@ fun CheckoutContent(
             Text("Abweichende Rechnungsadresse")
         }
 
-        PrimaryButton(
-            text = "Bestellung aufgeben",
-            onClick = onPlaceOrder,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(responsiveButtonHeight()),
-            enabled = selectedPaymentMethod != null && 
-                     shippingAddress.recipientFirstName.isNotBlank() &&
-                     shippingAddress.recipientLastName.isNotBlank() &&
-                     shippingAddress.street.isNotBlank() &&
-                     shippingAddress.city.isNotBlank() &&
-                     shippingAddress.postalCode.isNotBlank() &&
-                     email.isNotBlank() &&
-                     (!createAccount || password.isNotBlank())
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            PrimaryButton(
+                text = "Bestellung aufgeben",
+                onClick = onPlaceOrder,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(responsiveButtonHeight()),
+                enabled = selectedPaymentMethod != null && 
+                         shippingAddress.recipientFirstName.isNotBlank() &&
+                         shippingAddress.recipientLastName.isNotBlank() &&
+                         shippingAddress.street.isNotBlank() &&
+                         shippingAddress.city.isNotBlank() &&
+                         shippingAddress.postalCode.isNotBlank() &&
+                         (user != null || email.isNotBlank()) &&
+                         (!createAccount || password.isNotBlank())
+            )
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(responsiveButtonHeight())
+            ) {
+                Text("Cancel")
+            }
+        }
     }
 }

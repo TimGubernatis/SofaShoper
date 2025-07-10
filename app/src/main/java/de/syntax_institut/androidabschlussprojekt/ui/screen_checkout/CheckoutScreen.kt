@@ -247,7 +247,10 @@ fun CheckoutScreen(
                     adoptShippingChanges = adoptShippingChanges,
                     onAdoptShippingChangesChange = { adoptShippingChanges = it },
                     adoptBillingChanges = adoptBillingChanges,
-                    onAdoptBillingChangesChange = { adoptBillingChanges = it }
+                    onAdoptBillingChangesChange = { adoptBillingChanges = it },
+                    checkoutViewModel = checkoutViewModel,
+                    userPaymentMethods = checkoutViewModel.userPaymentMethods.collectAsState().value,
+                    onCancel = onBackClick
                 )
             }
         }

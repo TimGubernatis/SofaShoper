@@ -25,7 +25,8 @@ import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacin
 @Composable
 fun PaymentMethodSection(
     selectedMethod: PaymentMethod?,
-    onMethodSelect: (PaymentMethod) -> Unit
+    onMethodSelect: (PaymentMethod) -> Unit,
+    userPaymentMethods: List<PaymentMethod>
 ) {
     var expanded by remember { mutableStateOf(false) }
     val iconMap = mapOf(
@@ -64,41 +65,80 @@ fun PaymentMethodSection(
                     }
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    PaymentMethodType.values().forEach { methodType ->
+                    userPaymentMethods.forEach { paymentMethod ->
                         DropdownMenuItem(
-                            text = { Text(
-                                when (methodType) {
-                                    PaymentMethodType.PAYPAL -> "PayPal"
-                                    PaymentMethodType.ABBUCHUNG -> "Abbuchung"
-                                    PaymentMethodType.UEBERWEISUNG -> "Überweisung"
-                                    PaymentMethodType.NACHNAHME -> "Nachnahme"
-                                    PaymentMethodType.VISA -> "Visa"
-                                    PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
-                                }
-                            ) },
+                            text = { Text(paymentMethod.type.name) },
                             onClick = {
-                                val paymentMethod = when (methodType) {
-                                    PaymentMethodType.PAYPAL -> PaymentMethod.paypal("")
-                                    PaymentMethodType.ABBUCHUNG -> PaymentMethod.none()
-                                    PaymentMethodType.NACHNAHME -> PaymentMethod.cashOnDelivery()
-                                    PaymentMethodType.VISA -> PaymentMethod.visa()
-                                    PaymentMethodType.AMAZON_PAY -> PaymentMethod.amazonPay()
-                                    PaymentMethodType.UEBERWEISUNG -> PaymentMethod.bankTransfer()
-                                }
                                 onMethodSelect(paymentMethod)
                                 expanded = false
                             },
                             leadingIcon = {
-                                when (methodType) {
+                                when (paymentMethod.type) {
                                     PaymentMethodType.PAYPAL, PaymentMethodType.VISA, PaymentMethodType.AMAZON_PAY ->
-                                        Image(painter = painterResource(vectorIconMap[methodType]!!), contentDescription = null, modifier = Modifier.size(32.dp))
+                                        Image(painter = painterResource(vectorIconMap[paymentMethod.type]!!), contentDescription = null, modifier = Modifier.size(32.dp))
                                     else ->
-                                        Icon(iconMap[methodType] ?: Icons.Default.Payment, contentDescription = null, modifier = Modifier.size(32.dp))
+                                        Icon(iconMap[paymentMethod.type] ?: Icons.Default.Payment, contentDescription = null, modifier = Modifier.size(32.dp))
                                 }
                             }
                         )
                     }
                 }
+            }
+            Spacer(modifier = Modifier.height(responsiveSpacing()))
+            var showNewPaymentDialog by remember { mutableStateOf(false) }
+            Button(onClick = { showNewPaymentDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Text("Neue Zahlungsmethode hinzufügen")
+            }
+            if (showNewPaymentDialog) {
+                var selectedType by remember { mutableStateOf(PaymentMethodType.PAYPAL) }
+                AlertDialog(
+                    onDismissRequest = { showNewPaymentDialog = false },
+                    title = { Text("Neue Zahlungsmethode hinzufügen") },
+                    text = {
+                        Column {
+                            Text("Typ auswählen:")
+                            PaymentMethodType.values().forEach { type ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    RadioButton(
+                                        selected = selectedType == type,
+                                        onClick = { selectedType = type }
+                                    )
+                                    Text(
+                                        when (type) {
+                                            PaymentMethodType.PAYPAL -> "PayPal"
+                                            PaymentMethodType.ABBUCHUNG -> "Abbuchung"
+                                            PaymentMethodType.UEBERWEISUNG -> "Überweisung"
+                                            PaymentMethodType.NACHNAHME -> "Nachnahme"
+                                            PaymentMethodType.VISA -> "Visa"
+                                            PaymentMethodType.AMAZON_PAY -> "Amazon Pay"
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            val paymentMethod = when (selectedType) {
+                                PaymentMethodType.PAYPAL -> PaymentMethod.paypal("")
+                                PaymentMethodType.ABBUCHUNG -> PaymentMethod.none()
+                                PaymentMethodType.NACHNAHME -> PaymentMethod.cashOnDelivery()
+                                PaymentMethodType.VISA -> PaymentMethod.visa()
+                                PaymentMethodType.AMAZON_PAY -> PaymentMethod.amazonPay()
+                                PaymentMethodType.UEBERWEISUNG -> PaymentMethod.bankTransfer()
+                            }
+                            onMethodSelect(paymentMethod)
+                            showNewPaymentDialog = false
+                        }) {
+                            Text("Speichern")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showNewPaymentDialog = false }) {
+                            Text("Abbrechen")
+                        }
+                    }
+                )
             }
         }
     }
