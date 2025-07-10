@@ -34,6 +34,8 @@ import de.syntax_institut.androidabschlussprojekt.data.notification.OfferNotific
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
+import androidx.activity.compose.BackHandler
+import android.app.Activity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +49,10 @@ fun MainScreen(
     authViewModel: AuthViewModel = koinViewModel(),
     favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
+    val activity = LocalContext.current as? Activity
+    BackHandler {
+        activity?.finish()
+    }
     val uiState by mainViewModel.uiState.collectAsState()
     val selectedCategory by mainViewModel.selectedCategory.collectAsState()
     val selectedCategoryId = selectedCategory?.id ?: -1
