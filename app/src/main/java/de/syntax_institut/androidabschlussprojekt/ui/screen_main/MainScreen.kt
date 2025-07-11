@@ -28,18 +28,16 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.Main
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.components.MainCartSnackbar
 import de.syntax_institut.androidabschlussprojekt.viewmodel.NotificationViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import de.syntax_institut.androidabschlussprojekt.data.notification.OfferNotificationWorker
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
 import androidx.activity.compose.BackHandler
-import android.app.Activity
+import androidx.compose.ui.unit.dp
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    modifier: Modifier = Modifier,
+    onBackPressed: () -> Unit = {},
     mainViewModel: MainViewModel = koinViewModel(),
     cartViewModel: CartViewModel = koinViewModel(),
     onProductClick: (Int) -> Unit,
@@ -49,10 +47,11 @@ fun MainScreen(
     authViewModel: AuthViewModel = koinViewModel(),
     favoritesViewModel: FavoritesViewModel = koinViewModel()
 ) {
-    val activity = LocalContext.current as? Activity
+
     BackHandler {
-        activity?.finish()
+        onBackPressed()
     }
+
     val uiState by mainViewModel.uiState.collectAsState()
     val selectedCategory by mainViewModel.selectedCategory.collectAsState()
     val selectedCategoryId = selectedCategory?.id ?: -1
@@ -81,13 +80,11 @@ fun MainScreen(
         }
     }
 
-
     fun onProductAddedToCart(productName: String, productPrice: Double) {
         pendingProductName = productName
         bottomBarTotal += productPrice
         bottomBarCount += 1
     }
-
 
     LaunchedEffect(cartItems) {
         if (cartItems.isEmpty()) {
@@ -95,7 +92,6 @@ fun MainScreen(
             bottomBarCount = 0
         }
     }
-
 
     LaunchedEffect(cartTotal, cartItems) {
         if (pendingProductName != null) {
@@ -119,6 +115,8 @@ fun MainScreen(
     Scaffold(
         topBar = {
             MainTopBar(
+                modifier = Modifier
+                    .padding(WindowInsets.statusBars.asPaddingValues()),
                 isSearching = isSearching,
                 userName = userName,
                 onSearchClick = { isSearching = !isSearching },

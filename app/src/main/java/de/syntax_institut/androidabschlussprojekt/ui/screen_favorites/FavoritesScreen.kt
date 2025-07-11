@@ -24,6 +24,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.components
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.components.FavoritesSortType
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.components.EmptyFavoritesView
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
@@ -70,6 +71,7 @@ fun FavoritesScreen(
             )
         }
     ) { padding ->
+
         Column(modifier = Modifier.padding(padding)) {
             FavoritesSortDropdown(
                 selected = sortType,
@@ -78,6 +80,7 @@ fun FavoritesScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
             )
+
             if (sortedFavorites.isEmpty()) {
                 EmptyFavoritesView()
             } else {

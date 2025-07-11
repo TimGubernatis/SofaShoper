@@ -10,8 +10,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import de.syntax_institut.androidabschlussprojekt.R
+import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,7 +19,8 @@ fun MainTopBar(
     userName: String?,
     onSearchClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onFavoritesClick: () -> Unit
+    onFavoritesClick: () -> Unit,
+    modifier: Modifier
 ) {
     TopAppBar(
         title = {
