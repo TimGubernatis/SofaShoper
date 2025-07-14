@@ -18,16 +18,10 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Ad
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
-import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
-import de.syntax_institut.androidabschlussprojekt.util.responsiveMaxWidth
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.components.GoogleSignInButton
 import androidx.compose.material3.HorizontalDivider
-import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,15 +73,15 @@ fun CheckoutContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(responsivePadding())
-            .widthIn(max = responsiveMaxWidth()),
-        verticalArrangement = Arrangement.spacedBy(responsiveSpacing()),
+            .padding(16.dp)
+            .widthIn(max = 360.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Card {
             Column(
-                modifier = Modifier.padding(responsiveCardPadding())
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text(
                     text = "Bestellübersicht",
@@ -95,7 +89,7 @@ fun CheckoutContent(
                     fontWeight = FontWeight.Bold
                 )
                 
-                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 cartItems.forEach { cartItem ->
                     Row(
@@ -113,7 +107,7 @@ fun CheckoutContent(
                     }
                 }
                 
-                HorizontalDivider(modifier = Modifier.padding(vertical = responsiveTextFieldSpacing()))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -191,7 +185,7 @@ fun CheckoutContent(
                     }
                 )
             }
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
         }
         AddressSection(
             address = shippingAddress,
@@ -227,7 +221,7 @@ fun CheckoutContent(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+                Spacer(modifier = Modifier.height(8.dp))
             }
             AddressSection(
                 address = billingAddress ?: Address("", "", "", "", "", "", "", "", "", ""),
@@ -321,7 +315,7 @@ fun CheckoutContent(
                 onClick = onPlaceOrder,
                 modifier = Modifier
                     .weight(1f)
-                    .height(responsiveButtonHeight()),
+                    .height(48.dp),
                 enabled = selectedPaymentMethod != null && 
                          shippingAddress.recipientFirstName.isNotBlank() &&
                          shippingAddress.recipientLastName.isNotBlank() &&
@@ -335,7 +329,7 @@ fun CheckoutContent(
                 onClick = onCancel,
                 modifier = Modifier
                     .weight(1f)
-                    .height(responsiveButtonHeight())
+                    .height(48.dp)
             ) {
                 Text("Cancel")
             }

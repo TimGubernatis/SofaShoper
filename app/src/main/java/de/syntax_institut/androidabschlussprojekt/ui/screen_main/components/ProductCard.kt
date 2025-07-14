@@ -26,18 +26,7 @@ import coil3.request.crossfade
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.data.model.Product
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
-import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveImageHeight
-import de.syntax_institut.androidabschlussprojekt.util.isTablet
 import androidx.compose.material3.AlertDialog
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCornerRadius
-import de.syntax_institut.androidabschlussprojekt.util.responsiveElevation
-import de.syntax_institut.androidabschlussprojekt.util.responsiveIconSize
-import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCardMaxWidth
-import de.syntax_institut.androidabschlussprojekt.util.responsiveIconButtonSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.draw.scale
 import androidx.compose.material3.SnackbarHost
@@ -46,7 +35,7 @@ import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
-import de.syntax_institut.androidabschlussprojekt.util.responsiveButtonHeight
+
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -76,16 +65,16 @@ fun ProductCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = responsiveCardMaxWidth())
-                .padding(horizontal = responsivePadding(), vertical = responsiveTextFieldSpacing()),
-            shape = RoundedCornerShape(responsiveCornerRadius()),
-            elevation = CardDefaults.cardElevation(responsiveElevation())
+                .widthIn(max = 360.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
         ) {
-            Column(modifier = Modifier.padding(responsiveCardPadding())) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(responsiveImageHeight()),
+                        .height(180.dp),
                     contentAlignment = Alignment.TopEnd
                 ) {
                     AsyncImage(
@@ -109,18 +98,18 @@ fun ProductCard(
                         },
                         modifier = Modifier
                             .padding(8.dp)
-                            .size(responsiveIconButtonSize())
+                            .size(48.dp)
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = if (isFavorite) "Favorit" else "Als Favorit markieren",
                             tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(responsiveIconSize())
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(responsiveSpacing()))
+                Spacer(modifier = Modifier.height(12.dp))
 
 
                 Text(
@@ -130,7 +119,7 @@ fun ProductCard(
                     modifier = Modifier.clickable(onClick = onClick)
                 )
 
-                Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+                Spacer(modifier = Modifier.height(8.dp))
 
 
                 Row(
@@ -163,7 +152,7 @@ fun ProductCard(
                         },
                         modifier = Modifier
                             .scale(scale)
-                            .height(responsiveButtonHeight()),
+                            .height(48.dp),
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -173,7 +162,7 @@ fun ProductCard(
                         Icon(
                             imageVector = Icons.Default.AddShoppingCart,
                             contentDescription = "In den Warenkorb",
-                            modifier = Modifier.size(responsiveIconSize())
+                            modifier = Modifier.size(24.dp)
                         )
 
                     }

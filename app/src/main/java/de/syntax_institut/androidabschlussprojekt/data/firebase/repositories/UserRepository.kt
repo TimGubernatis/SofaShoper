@@ -74,7 +74,7 @@ class UserRepository {
         userDoc.delete().await()
     }
 
-    // Lieferadressen
+
     suspend fun addShippingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address): String {
         val docRef = collection.document(userId)
             .collection("LieferAddresses")
@@ -107,7 +107,7 @@ class UserRepository {
             .await()
     }
 
-    // Rechnungsadressen
+
     suspend fun addBillingAddress(userId: String, address: de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address): String {
         val docRef = collection.document(userId)
             .collection("RechnungsAdresses")
@@ -151,10 +151,10 @@ class UserRepository {
         val snapshot = collection.document(userId).collection("payments").get().await()
         return snapshot.documents.mapNotNull { doc ->
             try {
-                // Versuche zuerst den Standard-Deserializer
+                
                 doc.toObject(de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod::class.java)
             } catch (e: Exception) {
-                // Fallback: Custom Deserializer für alte Daten
+
                 try {
                     val data = doc.data
                     if (data != null) {

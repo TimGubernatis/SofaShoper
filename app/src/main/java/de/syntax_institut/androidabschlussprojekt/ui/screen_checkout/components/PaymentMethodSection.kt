@@ -18,9 +18,7 @@ import androidx.compose.material.icons.filled.SyncAlt
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethodType
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+
 
 @Composable
 fun PaymentMethodSection(
@@ -41,7 +39,7 @@ fun PaymentMethodSection(
     )
     Card {
         Column(
-            modifier = Modifier.padding(responsiveCardPadding())
+            modifier = Modifier.padding()
         ) {
             Text(
                 text = "Zahlungsmethode",
@@ -49,7 +47,7 @@ fun PaymentMethodSection(
                 fontWeight = FontWeight.Bold
             )
             
-            Spacer(modifier = Modifier.height(responsiveSpacing()))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Box {
                 OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
@@ -84,7 +82,7 @@ fun PaymentMethodSection(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(responsiveSpacing()))
+            Spacer(modifier = Modifier.height(12.dp))
             var showNewPaymentDialog by remember { mutableStateOf(false) }
             Button(onClick = { showNewPaymentDialog = true }, modifier = Modifier.fillMaxWidth()) {
                 Text("Neue Zahlungsmethode hinzufügen")

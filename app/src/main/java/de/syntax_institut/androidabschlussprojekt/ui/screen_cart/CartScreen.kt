@@ -15,8 +15,6 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.CartViewModel
 import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.CartItemCard
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.components.EmptyCart
-import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
 import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import de.syntax_institut.androidabschlussprojekt.ui.components.PrimaryButton
 
@@ -64,8 +62,8 @@ fun CartScreen(
             ) {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(responsivePadding()),
-                    verticalArrangement = Arrangement.spacedBy(responsiveSpacing())
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(cartItems, key = { it.product.id }) { cartItem ->
                         CartItemCard(

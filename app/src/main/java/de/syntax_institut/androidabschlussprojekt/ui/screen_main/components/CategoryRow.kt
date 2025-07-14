@@ -23,7 +23,7 @@ fun CategoryRow(
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .padding(vertical = 4.dp, horizontal = 2.dp)
     ) {
         items(categories) { category ->
             FilterChip(
@@ -31,7 +31,9 @@ fun CategoryRow(
                 onClick = { onCategoryClick(category) },
                 label = { Text(category.name) }
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(2.dp))
         }
     }
 }
+
+

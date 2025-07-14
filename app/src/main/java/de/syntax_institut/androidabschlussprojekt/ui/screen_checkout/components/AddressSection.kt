@@ -4,16 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import de.syntax_institut.androidabschlussprojekt.util.responsiveCardPadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.isTablet
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSmallTextSize
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import de.syntax_institut.androidabschlussprojekt.ui.components.CountryPicker
 
@@ -25,7 +20,7 @@ fun AddressSection(
 ) {
     Card {
         Column(
-            modifier = Modifier.padding(responsiveCardPadding())
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = title,
@@ -33,10 +28,10 @@ fun AddressSection(
                 fontWeight = FontWeight.Bold
             )
             
-            Spacer(modifier = Modifier.height(responsiveSpacing()))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
                     value = address.recipientFirstName,
@@ -52,10 +47,10 @@ fun AddressSection(
                 )
             }
             
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
                     value = address.street,
@@ -71,7 +66,7 @@ fun AddressSection(
                 )
             }
             
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
             
             OutlinedTextField(
                 value = address.addressAddition ?: "",
@@ -80,10 +75,10 @@ fun AddressSection(
                 modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(responsiveTextFieldSpacing())
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
                     value = address.postalCode,
@@ -99,7 +94,7 @@ fun AddressSection(
                 )
             }
             
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
             
             OutlinedTextField(
                 value = address.phone ?: "",
@@ -108,7 +103,7 @@ fun AddressSection(
                 modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(responsiveTextFieldSpacing()))
+            Spacer(modifier = Modifier.height(8.dp))
             
             CountryPicker(
                 value = address.country,

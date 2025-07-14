@@ -16,9 +16,7 @@ import org.koin.androidx.compose.koinViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 import androidx.compose.ui.res.stringResource
 import de.syntax_institut.androidabschlussprojekt.viewmodel.FavoritesViewModel
-import de.syntax_institut.androidabschlussprojekt.util.responsivePadding
-import de.syntax_institut.androidabschlussprojekt.util.responsiveSpacing
-import de.syntax_institut.androidabschlussprojekt.util.responsiveTextFieldSpacing
+import androidx.compose.ui.unit.dp
 import de.syntax_institut.androidabschlussprojekt.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.items
@@ -30,7 +28,7 @@ import de.syntax_institut.androidabschlussprojekt.viewmodel.NotificationViewMode
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.syntax_institut.androidabschlussprojekt.ui.components.NotificationOptInDialog
 import androidx.activity.compose.BackHandler
-import androidx.compose.ui.unit.dp
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,7 +139,7 @@ fun MainScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(horizontal = responsivePadding())
+                .padding(horizontal = 2.dp)
         ) {
             if (dialogVisible && showOptInDialog) {
                 NotificationOptInDialog(
@@ -184,10 +182,12 @@ fun MainScreen(
                             if (it.id == -1) mainViewModel.selectCategory(null) else mainViewModel.selectCategory(it)
                         }
                     )
+
+
                     DealOfTheDayBanner()
                     LazyColumn(
-                        contentPadding = PaddingValues(horizontal = responsivePadding(), vertical = responsiveTextFieldSpacing()),
-                        verticalArrangement = Arrangement.spacedBy(responsiveSpacing())
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(filteredProducts, key = { it.id }) { product ->
                             ProductCard(

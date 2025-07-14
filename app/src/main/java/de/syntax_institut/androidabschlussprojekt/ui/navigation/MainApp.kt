@@ -10,13 +10,11 @@ import androidx.navigation.compose.rememberNavController
 import de.syntax_institut.androidabschlussprojekt.ui.screen_detail.ProductDetailScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_main.MainScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_login.LoginScreen
-import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.ProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_favorites.FavoritesScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_cart.CartScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_checkout.CheckoutScreen
 import de.syntax_institut.androidabschlussprojekt.ui.screen_profile.AccountScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
-import de.syntax_institut.androidabschlussprojekt.viewmodel.UserProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
