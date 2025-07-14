@@ -62,15 +62,22 @@ class UserProfileViewModel(
     private val _orders = MutableStateFlow<List<de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel>>(emptyList())
     val orders: StateFlow<List<de.syntax_institut.androidabschlussprojekt.data.model.OrderFirestoreModel>> = _orders
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _isOrdersLoading = MutableStateFlow(false)
+    val isOrdersLoading: StateFlow<Boolean> = _isOrdersLoading
+
     init {
         viewModelScope.launch {
             authViewModel.user.collect { currentUser ->
+                _isLoading.value = true
                 if (currentUser != null) {
                     val loadedUser = userRepository.getUser(currentUser.id ?: "")
                     _user.value = loadedUser
                 } else {
                     _user.value = null
                 }
+                _isLoading.value = false
             }
         }
     }
@@ -108,9 +115,11 @@ class UserProfileViewModel(
 
     fun loadAddresses(userId: String) {
         viewModelScope.launch {
+            _isLoading.value = true
             _shippingAddresses.value = userRepository.getShippingAddresses(userId)
             _billingAddresses.value = userRepository.getBillingAddresses(userId)
             checkAndSetDefaultAddresses(userId)
+            _isLoading.value = false
         }
     }
 
@@ -299,7 +308,9 @@ class UserProfileViewModel(
 
     fun loadOrders(userId: String) {
         viewModelScope.launch {
+            _isOrdersLoading.value = true
             _orders.value = userRepository.getOrders(userId)
+            _isOrdersLoading.value = false
         }
     }
 }

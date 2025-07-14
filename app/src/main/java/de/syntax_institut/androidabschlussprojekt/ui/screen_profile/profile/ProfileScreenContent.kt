@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -44,6 +45,13 @@ fun ProfileScreenContent(
     var phone by remember { mutableStateOf(currentUser?.phone ?: "") }
     var mobile by remember { mutableStateOf(currentUser?.mobile ?: "") }
     val scrollState = rememberScrollState()
+    val isLoading by userProfileViewModel.isLoading.collectAsState()
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
