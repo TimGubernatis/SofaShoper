@@ -198,11 +198,11 @@ class AuthViewModel(
             val userId = user?.uid
             if (user != null && userId != null) {
                 try {
-                    // 1. Firestore-Daten löschen
+
                     userRepository.deleteUserCompletely(userId)
-                    // 2. Auth-Account löschen
+
                     user.delete().await()
-                    // 3. State zurücksetzen/ausloggen
+
                     signOut()
                 } catch (e: Exception) {
                     _errorMessage.value = "Fehler beim Löschen des Accounts: ${e.message}"

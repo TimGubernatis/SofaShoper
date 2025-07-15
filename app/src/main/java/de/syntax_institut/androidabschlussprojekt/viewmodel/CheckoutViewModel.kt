@@ -172,14 +172,14 @@ class CheckoutViewModel(
             _shippingAddresses.value = userRepository?.getShippingAddresses(userId) ?: emptyList()
             _billingAddresses.value = userRepository?.getBillingAddresses(userId) ?: emptyList()
             _userPaymentMethods.value = userRepository?.getPayments(userId) ?: emptyList()
-            // Lieferadresse automatisch setzen, wenn vorhanden und noch keine ausgewählt ist
+
             if (_shippingAddresses.value.isNotEmpty() && _selectedShippingAddressId.value == null) {
                 val firstId = _shippingAddresses.value.first().first
                 _selectedShippingAddressId.value = firstId
                 val address = _shippingAddresses.value.first().second
                 _shippingAddress.value = address
             }
-            // Zahlungsmethode automatisch setzen, wenn vorhanden und noch keine ausgewählt ist
+
             if (_userPaymentMethods.value.isNotEmpty() && _selectedPaymentMethod.value == null) {
                 _selectedPaymentMethod.value = _userPaymentMethods.value.first()
             }
