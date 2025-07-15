@@ -1,7 +1,5 @@
 package de.syntax_institut.androidabschlussprojekt.data.firebase.domain.usecases
 
-
-import android.util.Log
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
 import de.syntax_institut.androidabschlussprojekt.data.firebase.services.AuthenticationService

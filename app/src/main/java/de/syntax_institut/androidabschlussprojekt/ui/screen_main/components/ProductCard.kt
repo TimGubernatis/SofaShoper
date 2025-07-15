@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
@@ -29,14 +28,7 @@ import de.syntax_institut.androidabschlussprojekt.util.formatPrice
 import androidx.compose.material3.AlertDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.draw.scale
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarDefaults
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
 
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun ProductCard(

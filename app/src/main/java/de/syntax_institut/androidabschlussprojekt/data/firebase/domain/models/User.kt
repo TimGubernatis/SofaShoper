@@ -1,6 +1,6 @@
 package de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models
 
-// User-Modell für Account-Daten (Firestore: users-Collection)
+
 data class User(
     val id: String? = null,
     val email: String = "",
@@ -28,7 +28,7 @@ enum class PaymentMethodType {
                 "ABBUCHUNG" -> ABBUCHUNG
                 "UEBERWEISUNG" -> UEBERWEISUNG
                 "NACHNAHME" -> NACHNAHME
-                else -> ABBUCHUNG // Default fallback
+                else -> ABBUCHUNG
             }
         }
     }
@@ -48,7 +48,7 @@ data class PaymentMethod(
         fun amazonPay() = PaymentMethod(PaymentMethodType.AMAZON_PAY)
         fun bankTransfer() = PaymentMethod(PaymentMethodType.UEBERWEISUNG)
         
-        // Custom deserializer für Firebase-Kompatibilität
+
         fun fromMap(map: Map<String, Any>): PaymentMethod {
             val typeString = map["type"] as? String ?: "ABBUCHUNG"
             val type = PaymentMethodType.fromString(typeString)

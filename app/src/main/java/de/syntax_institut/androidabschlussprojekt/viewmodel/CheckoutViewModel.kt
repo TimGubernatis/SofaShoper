@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.User
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.PaymentMethod
 import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.UserRepository
-import de.syntax_institut.androidabschlussprojekt.viewmodel.AuthViewModel
 
 class CheckoutViewModel(
     private val cartRepository: CartRepository,

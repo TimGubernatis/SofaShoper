@@ -7,9 +7,7 @@ import de.syntax_institut.androidabschlussprojekt.data.firebase.repositories.Use
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObject
 import de.syntax_institut.androidabschlussprojekt.data.firebase.domain.models.Address
 import kotlinx.coroutines.tasks.await
 

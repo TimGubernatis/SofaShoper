@@ -12,7 +12,7 @@ data class Product(
     val updatedAt: String
 )
 
-// Favorite-Modell für Favoriten-Subcollection unter User
+
 data class Favorite(
     val productId: Int = 0,
     val addedAt: Long = System.currentTimeMillis()
