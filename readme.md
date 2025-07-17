@@ -1,39 +1,41 @@
 # 🛋️ Sofa-Shopper
 
-**Get Your Stuff Now.**
+**Get Your Stuff Now – direkt vom Sofa aus.**  
+Moderne Shopping-App mit Fokus auf Einfachheit, Übersicht & Funktion.
 
 ---
 
 ## 📚 Inhaltsverzeichnis
 
-1. [🛋️ Sofa-Shopper](#-sofa-shopper)  
-2. [📝 Beschreibung](#-beschreibung)  
-3. [🎨 Design](#-design)
-   - [🖼️ Weitere Screens](#-weitere-screens)  
-4. [✅ Features](#-features)  
-5. [🛠️ Technischer Aufbau](#-technischer-aufbau)  
-   - [🔧 Projektstruktur & Architektur](#-projektstruktur--architektur)  
-   - [💾 Datenspeicherung](#-datenspeicherung)  
-   - [🌐 API](#-api)  
-   - [📦 Drittanbieter-Frameworks](#-drittanbieter-frameworks)  
-6. [🛒 Einkauf & Bestand](#-einkauf--bestand)  
-7. [🔮 Ausblick](#-ausblick)
+1. [📝 Projektbeschreibung](#-projektbeschreibung)  
+2. [🎨 App-Design](#-app-design)  
+   - [🖼️ Weitere Screens](#weitere-screens)  
+3. [✅ Features](#-features)  
+4. [🛠️ Technischer Aufbau](#-technischer-aufbau)  
+   - [🔧 Architektur & Struktur](#architektur--struktur)  
+   - [💾 Datenmanagement](#datenmanagement)  
+   - [🌐 API](#api)  
+   - [📦 Verwendete Libraries](#verwendete-libraries)  
+5. [🛒 Einkaufslogik & Bestand](#-einkaufslogik--bestand)  
+6. [🔮 Ausblick](#-ausblick)
+7. [👤 Kontakt](#-kontakt)
 
 ---
 
-## 📝 Beschreibung
+## 📝 Projektbeschreibung
 
-**Sofa-Shopper** ist deine smarte Shopping-App für entspannte Einkaufserlebnisse vom Sofa aus.  
-Egal ob Mode, Technik oder Lifestyle-Produkte – mit wenigen Klicks findest du genau das, was du brauchst.
+**Sofa-Shopper** ist eine intuitive E-Commerce-App, die dir das Einkaufen so bequem wie möglich macht – direkt vom Sofa aus.  
+Ob Fashion, Gadgets oder Lifestyle – die App bietet eine moderne Einkaufserfahrung mit Fokus auf:
 
-Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen – ohne sich durch komplizierte Menüs kämpfen zu müssen.
+- 🧭 **Übersichtlichkeit statt Überfrachtung**  
+- ⚡ **Schneller Checkout**  
+- 🎯 **Klares Design & direkte Bedienung**
 
-> Ziel: **Intuitives Design, schlanker Bestellprozess, keine Ablenkung.**  
-> Im Gegensatz zu anderen Shopping-Apps setzt Sofa-Shopper auf Übersichtlichkeit, einfache Bedienung und ein modernes Look-and-Feel.
+> **Ziel**: Eine einfache, performante und moderne Shopping-App für alle, die keine Lust auf überladene Menüs und komplizierte Prozesse haben.
 
 ---
 
-## 🎨 Design
+## 🎨 App-Design
 
 | Startseite | Produktansicht | Warenkorb |
 |------------|----------------|-----------|
@@ -51,77 +53,95 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen �
 
 ## ✅ Features
 
-- [x] Produktliste mit Such- und Filterfunktion  
-- [x] Detaillierte Produktansicht mit Bildern und Beschreibung  
-- [x] Warenkorb mit Live-Preisberechnung  
-- [x] Favoritenfunktion für Produkte  
-- [x] Benutzerprofil mit Bestellübersicht  
-- [x] Dark Mode  
+- 🔍 Produktsuche mit Filteroptionen  
+- 🛍️ Detaillierte Produktansicht mit Beschreibung & Bildern  
+- 🧮 Warenkorb mit Live-Preisberechnung  
+- ❤️ Favoriten-Funktion  
+- 👤 Benutzerprofil mit Bestellübersicht  
+- 🔐 Google-Login & Firebase Authentication  
+- 🔔 Push-Benachrichtigungen  
+- 🏷️ Adress- & Bestellverwaltung  
+- 🧩 Fehlerbehandlung mit User-Feedback  
+- 🌙 Dark Mode
 
 ---
 
 ## 🛠️ Technischer Aufbau
 
-### 🔧 Projektstruktur & Architektur
+### 🔧 Architektur & Struktur
 
-Das Projekt folgt dem **MVVM-Pattern** und ist modular aufgebaut:
+Das Projekt ist nach dem **MVVM-Pattern** aufgebaut und modular strukturiert:
 
 ```
-/ui          → alle Screens & Composables
+/ui          → alle Screens & ausgelagerte Komponenten
 /viewmodel   → zustandsbasierte Steuerung per StateFlow
-/repository  → Vermittlung zwischen UI und Datenquelle
-/data        → Modellklassen & API-Anbindung
+/repository  → Vermittlung zwischen UI und Datenquelle (Repository Pattern)
+/data        → Modellklassen, API-Services, Firebase-Integration
+/di          → Dependency Injection (Koin)
 ```
 
-> Diese Struktur sorgt für klare Trennung von Verantwortlichkeiten und einfache Testbarkeit.
+> Diese Struktur ermöglicht eine saubere Trennung der Logik, einfache Wartung und gute Testbarkeit.
 
 ---
 
-### 💾 Datenspeicherung
+### 💾 Datenmanagement
 
-- Aktuell: **temporäre In-Memory-Datenhaltung**  
-- Zukünftig: Cloud-Sync via **Firebase Firestore**
+- 🔐 **Firebase Authentication** – Login mit Google  
+- ☁️ **Firebase Firestore** – Speicherung von Nutzer-, Adress- und Bestelldaten  
+- 🗂️ **In-App-Speicherung** – temporärer Cache für Warenkorb & Favoriten
 
 ---
 
 ### 🌐 API
 
-Die Produktdaten stammen von der **[Fake Store API](https://fakeapi.platzi.com)**  
-> Diese API bietet eine realistische Testumgebung für E-Commerce-Apps mit Produkten, Bildern, Preisen & mehr.
+Die Produktdaten werden über die [Fake Store API](https://fakeapi.platzi.com) geladen – eine realistische Demo-Schnittstelle für E-Commerce-Projekte mit echten Produktdaten (inkl. Bildern, Preisen & Beschreibung).
 
 ---
 
-### 📦 Drittanbieter-Frameworks
+### 📦 Verwendete Libraries
 
-- [Retrofit](https://square.github.io/retrofit/) – für Netzwerkaufrufe  
-- [Koin](https://insert-koin.io/) – Dependency Injection  
-- [Coil](https://coil-kt.github.io/coil/) – Bild-Loading  
-- [Jetpack Compose](https://developer.android.com/jetpack/compose) – UI-Toolkit  
+- 🔗 [Retrofit](https://square.github.io/retrofit/) – HTTP-Client für API-Zugriffe  
+- 🧠 [Koin](https://insert-koin.io/) – Dependency Injection Framework  
+- 🖼️ [Coil](https://coil-kt.github.io/coil/) – modernes Bild-Loading  
+- 🧩 [Jetpack Compose](https://developer.android.com/jetpack/compose) – modernes UI-Toolkit  
+- 🔥 [Firebase](https://firebase.google.com/) – Auth & Cloud Firestore
 
 ---
 
-## 🛒 Einkauf & Bestand
+## 🛒 Einkaufslogik & Bestand
 
-Sofa-Shopper simuliert echte Kaufvorgänge inklusive:
+**Realistische Kauf- & Lagerlogik:**
 
-- ✅ **Produktbestand**: Jeder Artikel hat eine begrenzte Menge im Lager.  
-- ✅ **Kauf-Simulation**: Beim Kauf wird der Bestand reduziert.  
-- ✅ **Lagerprüfung**: Artikel sind „ausverkauft“, wenn der Bestand auf 0 fällt.  
-- ✅ **Warenkorb-Validierung**: Nur verfügbare Mengen können in den Warenkorb gelegt werden.  
-- ✅ **Restbestand-Hinweis**: Anzeige „Nur noch X verfügbar!“ bei geringer Stückzahl.  
+- 📦 **Dynamischer Produktbestand**: Jeder Artikel hat Lagerbestand  
+- 🛒 **Kauf-Simulation**: Lagerbestand verringert sich nach Kauf  
+- 🚫 **„Ausverkauft“-Status**: Produkte mit Bestand = 0 können nicht gekauft werden  
+- ⚠️ **Verfügbarkeits-Hinweis**: Anzeige „Nur noch X verfügbar!“  
+- 🔄 **Warenkorbprüfung**: Menge darf Lagerbestand nicht überschreiten
 
-> Ziel ist eine realitätsnahe Shopping-Experience – auch für Tests, Prototyping & UI-Demonstrationen.
+> Diese Logik bietet realistische Simulationen – ideal für Prototypen & Usability-Tests.
 
 ---
 
 ## 🔮 Ausblick
 
-- [ ] Benutzer-Login mit Firebase Auth  
-- [ ] Wunschzettel & Merklisten  
-- [ ] Push-Benachrichtigungen bei Angeboten  
-- [ ] Bestellverfolgung mit Tracking  
-- [ ] Mehrsprachigkeit (DE/EN)  
+Geplante Erweiterungen:
+
+- [ ] 📦 Paket-Tracking & Sendungsverfolgung  
+- [ ] 📝 Wunschlisten & Merkzettel  
+- [ ] 🔍 Erweiterte Filter- & Sortierfunktionen  
+- [ ] 🌐 Mehrsprachigkeit (Deutsch / Englisch)  
+- [ ] 🎨 Weitere Personalisierungsoptionen  
+- [ ] 🧱 Migration auf Supabase (statt Firebase)  
+- [ ] 🖥️ Web-Interface zur Produktpflege
 
 ---
 
-**Made with ❤️ in Kotlin + Jetpack Compose**
+## 👤 Kontakt
+
+> **Autor:** Tim Walter Gubernatis  
+> 📧 Mail: [Guberto@kabelmail.de](mailto:Guberto@kabelmail.de)  
+> 🔗 LinkedIn: [linkedin.com/in/tim-walter-gubernatis-00391534b](https://www.linkedin.com/in/tim-walter-gubernatis-00391534b)
+
+---
+
+**🧵 Made with ❤️ in Kotlin & Jetpack Compose**
