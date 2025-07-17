@@ -8,7 +8,8 @@
 
 1. [🛋️ Sofa-Shopper](#-sofa-shopper)  
 2. [📝 Beschreibung](#-beschreibung)  
-3. [🎨 Design](#-design)  
+3. [🎨 Design](#-design)
+   - [🖼️ Weitere Screens](#-weitere-screens)  
 4. [✅ Features](#-features)  
 5. [🛠️ Technischer Aufbau](#-technischer-aufbau)  
    - [🔧 Projektstruktur & Architektur](#-projektstruktur--architektur)  
@@ -36,8 +37,19 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen �
 
 | Startseite | Produktansicht | Warenkorb |
 |------------|----------------|-----------|
-| ![Startseite]() | ![Produktansicht]() | ![Warenkorb]() |
+| ![MainScreen](img/MainScreen.png) | ![DetailScreen](img/DetailScreen.png) | ![Warenkorb](img/Warenkorb.png) |
 
+---
+
+### Weitere Screens
+
+| Favoriten | Zur Kasse | Bestellungen |
+|-----------|-----------|--------------|
+| ![Favoriten](img/Favoriten.png) | ![ZurKasse](img/ZurKasse.png) | ![Bestellungen](img/Bestellungen.png) |
+
+| Warenkorb-Features |
+|--------------------|
+| ![Warenkorb Funktionen](img/Warenkorb%20Funktionen!.png) |
 ---
 
 ## ✅ Features
