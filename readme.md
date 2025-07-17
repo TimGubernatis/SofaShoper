@@ -49,7 +49,7 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen â
 
 | Warenkorb-Features |
 |--------------------|
-| ![Warenkorb Funktionen](img/Warenkorb%20Funktionen!.png) |
+| ![Warenkorb Funktionen](img/WahrenkorbFunktionen.png) |
 ---
 
 ## âœ… Features
