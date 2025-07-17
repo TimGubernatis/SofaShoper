@@ -47,9 +47,6 @@ Die App richtet sich an alle, die schnell, bequem und effizient shoppen wollen â
 |-----------|-----------|--------------|
 | ![Favoriten](img/Favoriten.png) | ![ZurKasse](img/ZurKasse.png) | ![Bestellungen](img/Bestellungen.png) |
 
-| Warenkorb-Features |
-|--------------------|
-| ![Warenkorb Funktionen](img/WahrenkorbFunktionen.png) |
 ---
 
 ## âœ… Features
